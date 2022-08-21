@@ -25,21 +25,24 @@ class Serial_I2C_Interface
     int _serialUSB;
 
     private:
-    void InitInterface();
+    bool InitInterface();
     void readSerialDevConfiguration();
     void readMCP23017Configuration();
-    void initSerialDevice();
+    bool initSerialDevice();
     bool checkSerialDevInfo();
     void setBaudrate(termios *tty);
     void setI2C_Clock();
+    void setInitOK(bool init);
 
     Serial_I2C_Interface_Config _serialConfig;
     char _writeBuf[256];
     char _readBuf[256];
+    bool _init                                    = false;;
     
     public:
     void write_Serial(char *buf);
     void read_Serial(char *buf);
+    bool getInitOK();
 };
  
 

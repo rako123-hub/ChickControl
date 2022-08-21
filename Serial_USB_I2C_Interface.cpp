@@ -16,13 +16,16 @@ const std::string config_section_Interface = "[Serial_USB_I2C_Interface]";
 Serial_I2C_Interface::Serial_I2C_Interface()
 {
     readSerialDevConfiguration();
-    initSerialDevice();
-    if (checkSerialDevInfo()) std::printf("%s is running \n", INTERFACEINITSTRING.c_str());
-    else
+    if(initSerialDevice())
     {
-        std::printf(" FAILURE %s is not running \n", INTERFACEINITSTRING.c_str());
+       if (checkSerialDevInfo()) std::printf("%s is running \n", INTERFACEINITSTRING.c_str());
+       else
+       {
+           std::printf(" FAILURE %s is not running \n", INTERFACEINITSTRING.c_str());
+       }
+       setI2C_Clock();
+       setInitOK(true);
     }
-    setI2C_Clock();
 }
 
 Serial_I2C_Interface::~Serial_I2C_Interface()
@@ -52,21 +55,23 @@ void Serial_I2C_Interface::readSerialDevConfiguration()
     
 }
 
-void Serial_I2C_Interface::initSerialDevice()
+bool Serial_I2C_Interface::initSerialDevice()
 {
+    bool result = false;
+
     _serialUSB = open(_serialConfig.devName.c_str(), O_RDWR | O_NONBLOCK);
     if(_serialUSB < 0)
     {
         std::printf("Error %i from open: %s\n", errno, strerror(errno));
         std::printf("Can't open serial device : %s --> close application \n", _serialConfig.devName.c_str());
-        return;
+        return result;
     } 
 
     struct termios tty;
     if(tcgetattr(_serialUSB, &tty) != 0) 
     {
       std::printf("Error %i from tcgetattr: %s \n", errno, strerror(errno));
-      return ;
+      return result ;
     }
     // set 8-n-0
     tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
@@ -98,9 +103,10 @@ void Serial_I2C_Interface::initSerialDevice()
     if (tcsetattr(_serialUSB, TCSANOW, &tty) != 0) 
     {
         std::printf("Error %i from tcsetattr: %s\n", errno, strerror(errno));
-        return;
+        return result;
     }
     std::printf("Open serial device : %s successfull! \n", _serialConfig.devName.c_str());
+    return true;
 }
 
 void Serial_I2C_Interface::setBaudrate(termios *tty)
@@ -175,6 +181,16 @@ void Serial_I2C_Interface::read_Serial(char *buf)
 
     //std::printf("Bytes read %d \n", numBytes);
     strcpy(buf, readBuf);
+}
+
+void Serial_I2C_Interface::setInitOK( bool init)
+{
+    _init = init;
+}
+
+bool Serial_I2C_Interface::getInitOK()
+{
+    return _init;
 }
     
     

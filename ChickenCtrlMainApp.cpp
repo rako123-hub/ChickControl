@@ -20,6 +20,13 @@ int main(int argc, char *argv[])
    FlapCtrl flap;
    Serial_I2C_Interface interface;
 
+   if(!interface.getInitOK())
+   {
+      printf("ERROR :: Exit Chicken Control before operating...\n");
+       return EXIT_SUCCESS; // return value
+
+   }
+
    while(true)
    {
       printf("main:: while loop\n");
