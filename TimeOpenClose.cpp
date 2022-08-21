@@ -5,14 +5,11 @@
 #include "TimeOpenClose.h"
 
 TimeOpenClose::TimeOpenClose()
-{ 
-}
+{}
 
 TimeOpenClose::TimeOpenClose(std::string open, std::string close)
-{
-    _open  = open;
-    _close = close;
-}
+:_open(open), _close(close)
+{}
 
 bool TimeOpenClose::detectOpenCloseTime()
 {

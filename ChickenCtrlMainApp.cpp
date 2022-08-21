@@ -5,6 +5,7 @@
 
 #include "Nestauto.h"
 #include "FlapCtrl.h"
+#include "MCP23017.h"
 #include "Serial_USB_I2C_Interface.h"
 
 #include "ChickenConfiguration.h"
@@ -13,10 +14,11 @@
 int main(int argc, char *argv[])
 {
    std::cout << "Huhn Control is starting \n";
-
-   Nestauto nest = Nestauto();
-   FlapCtrl flap = FlapCtrl();
-   Serial_I2C_Interface interface = Serial_I2C_Interface();
+   
+   MCP23017 mcp;
+   Nestauto nest;
+   FlapCtrl flap;
+   Serial_I2C_Interface interface;
 
    while(true)
    {

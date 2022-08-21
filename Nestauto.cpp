@@ -27,14 +27,15 @@ Nestauto::~Nestauto()
 
 void Nestauto::readNestautoConfiguration()
 {
-    
     ChickenConfiguration chickConfig(config_section);
     std::string key = "net_open";
-    _nestData.time_open  = chickConfig.getValue(key);
+    std:: string strValue;
+    if(chickConfig.getValue(key, strValue)) _nestData.time_open = strValue;
     key = "net_close";
-    _nestData.time_close = chickConfig.getValue(key);
-    key = "Cylinder";
-    _nestData.cylinders  = std::atoi(chickConfig.getValue(key).c_str());
+    if(chickConfig.getValue(key, strValue)) _nestData.time_close = strValue;
+    key = "Cylinder"; 
+    int iValue;
+    if(chickConfig.getValue(key, iValue)) _nestData.cylinders = iValue;
     _timeopenclose = new TimeOpenClose (_nestData.time_open, _nestData.time_close);
 } 
 
@@ -56,41 +57,4 @@ void Nestauto::doOpen()
 void Nestauto::doClose()
 {
     
-}
-
-bool Nestauto::checkTimeString()
-{
-    //bool v2(const std::string& nom)
-
-    //static const std::regex re{"[a-zA-Z][a-zA-Z0-9_]*"};
-    //return std::regex_match(nom, re);
-
-     // Regex to check valid time in 24-hour format
-   const std::regex time_pattern("([01]?[0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9]");
-
-   /*
-       ( represents the start of the group.
-                [01]?[0-9] represents the time starts with 0-9, 1-9, 00-09, 10-19.
-            | represents or.
-               2[0-3] represents the time starts with 20-23.
-        ) represents the end of the group. 
-     
-           : represents the time should be followed by a colon(:).
-            [0-5][0-9] represents the time followed by 00 to 59
-    */
-
-
-
-   if ( !regex_match(_nestData.time_open, time_pattern))
-   {
-       std::cout << "wrong time open configuration -> use default value \n";
-   }
-
-   if ( !regex_match(_nestData.time_close, time_pattern))
-   {
-       std::cout << "wrong time close configuration -> use default value \n";
-   }
-
-   return true;
-
 }

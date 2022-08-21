@@ -7,11 +7,11 @@
 
 #include <unistd.h> // write(), read(), close()
 
+#include "GlobalDefs.h"
 #include "ChickenConfiguration.h"
 #include "Serial_USB_I2C_Interface.h"
 
-const std::string config_section = "[Serial_USB_I2C_Interface]";
-
+const std::string config_section_Interface = "[Serial_USB_I2C_Interface]";
 
 Serial_I2C_Interface::Serial_I2C_Interface()
 {
@@ -22,6 +22,7 @@ Serial_I2C_Interface::Serial_I2C_Interface()
     {
         std::printf(" FAILURE %s is not running \n", INTERFACEINITSTRING.c_str());
     }
+    setI2C_Clock();
 }
 
 Serial_I2C_Interface::~Serial_I2C_Interface()
@@ -35,11 +36,20 @@ Serial_I2C_Interface::~Serial_I2C_Interface()
 
 void Serial_I2C_Interface::readSerialDevConfiguration()
 {
-    ChickenConfiguration chickConfig(config_section);
+    ChickenConfiguration chickConfig(config_section_Interface);
     std::string key = "Device";
-    _serialConfig.devName = chickConfig.getValue(key);
+    std::string strValue;
+    if(chickConfig.getValue(key, strValue)) _serialConfig.devName = strValue;
     key = "Baud";
-    _serialConfig.baudrate =  std::atoi(chickConfig.getValue(key).c_str());
+    int iValue = 0;
+    if(chickConfig.getValue(key, iValue))  _serialConfig.baudrate = iValue;
+    key = "Busclock";
+    if(chickConfig.getValue(key, iValue))
+    {
+        _serialConfig.busClock = iValue;
+        std::printf("****busclock:: %d\n", _serialConfig.busClock);
+    }
+    
 }
 
 void Serial_I2C_Interface::initSerialDevice()
@@ -55,7 +65,7 @@ void Serial_I2C_Interface::initSerialDevice()
     struct termios tty;
     if(tcgetattr(_serialUSB, &tty) != 0) 
     {
-      std::printf("Error %i from tcgetattr: %s\n", errno, strerror(errno));
+      std::printf("Error %i from tcgetattr: %s \n", errno, strerror(errno));
       return ;
     }
     // set 8-n-0
@@ -128,15 +138,24 @@ void Serial_I2C_Interface::setBaudrate(termios *tty)
 
 bool Serial_I2C_Interface::checkSerialDevInfo()
 {
-    char buf[256];
-    strcpy(buf, DEVINFO.c_str());
-    write_Serial(buf);
+    strcpy(_writeBuf, DEVINFO.c_str());
+    write_Serial(_writeBuf);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    read_Serial(buf);
-    printf("Read:: %s\n", buf);
-    std::string strRead(buf);
+    read_Serial(_readBuf);
+    printf("%s\n", _readBuf);
+    std::string strRead(_readBuf);
     if (strRead.find(INTERFACEINITSTRING) == 0) return false;
     else return true;
+}
+
+void Serial_I2C_Interface::setI2C_Clock()
+{
+    std::string strClock("T");
+    strClock += std::to_string(_serialConfig.busClock);
+
+    printf("Command:%s\n", strClock.c_str());
+    strcpy(_writeBuf, strClock.c_str());
+    write_Serial(_writeBuf);
 }
 
 void Serial_I2C_Interface::write_Serial(char *buf)

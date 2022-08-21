@@ -28,9 +28,10 @@ void FlapCtrl::readFlapCtrlConfiguration()
 {
     ChickenConfiguration chickConfig(config_section);
     std::string key = "flap_open";
-    _flapData.time_open  = chickConfig.getValue(key);
+    std::string strValue;
+    if(chickConfig.getValue(key, strValue)) _flapData.time_open = strValue;
     key = "flap_close";
-    _flapData.time_close = chickConfig.getValue(key);
+    if(chickConfig.getValue(key, strValue)) _flapData.time_close = strValue;
     _timeopenclose = new TimeOpenClose (_flapData.time_open, _flapData.time_close);
 } 
 
