@@ -17,6 +17,14 @@ struct NestautoData
     uint8_t     state;
 };
 
+struct CylinderDevice
+{
+    std::byte dir;            // direction bit [output]
+    std::byte enable;         // enaböle bit   [output]
+    std::byte open_detect;    // switch open   [input]
+    std::byte close_detect;   // switch close  [input]
+};
+
 
 class Nestauto
 {
@@ -31,6 +39,7 @@ class Nestauto
     void doOpen();
     void doClose();
     NestautoData _nestData;
+    std::vector<CylinderDevice> _cylinderDevList;
 
     public:
     void doWork();
