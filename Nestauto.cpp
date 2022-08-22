@@ -37,6 +37,21 @@ void Nestauto::readNestautoConfiguration()
     int iValue;
     if(chickConfig.getValue(key, iValue)) _nestData.cylinders = iValue;
     _timeopenclose = new TimeOpenClose (_nestData.time_open, _nestData.time_close);
+
+    for(int i = 0; i < _nestData.cylinders; i++ )
+    {   CylinderDevice dev;
+        key = "dir_" + std::to_string(i+1);
+        strValue.empty();
+        if(chickConfig.getValue(key, strValue)) dev.dir = strValue;
+        key = "enable_" + std::to_string(i+1);
+        if(chickConfig.getValue(key, strValue)) dev.enable = strValue;
+        key = "opendetect_" + std::to_string(i+1);
+        if(chickConfig.getValue(key, strValue)) dev.open_detect = strValue;
+        key = "closedetect_" + std::to_string(i+1);
+        if(chickConfig.getValue(key, strValue)) dev.close_detect = strValue;
+
+        _cylinderDevList.emplace_back(dev);
+    }
 } 
 
 void Nestauto::doWork()

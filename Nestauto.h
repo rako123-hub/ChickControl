@@ -19,10 +19,16 @@ struct NestautoData
 
 struct CylinderDevice
 {
+    /*
     std::byte dir;            // direction bit [output]
     std::byte enable;         // enaböle bit   [output]
     std::byte open_detect;    // switch open   [input]
     std::byte close_detect;   // switch close  [input]
+    */
+    std::string dir;            // direction bit [output]
+    std::string enable;         // enaböle bit   [output]
+    std::string open_detect;    // switch open   [input]
+    std::string close_detect;   // switch close  [input]
 };
 
 
