@@ -53,6 +53,7 @@ void ChickenConfiguration::CloseConfigFile()
 bool ChickenConfiguration::getValue(std::string key, std::string &strvalue)
 {
     bool result = false;
+    bool sectionfindfirst = false;
     std::string line;
     if (_file.is_open())
     {
@@ -66,17 +67,24 @@ bool ChickenConfiguration::getValue(std::string key, std::string &strvalue)
            if (std::regex_search(line, match, section))
            {
               if (match[0] == _section_Selected)
-              std::cout << "Section: " << match[0] << std::endl;
-           }
-           else if (std::regex_search(line, match, value))
-           {
-              if (key == match[1])
               {
-                 std::cout << "Key: " << match[1] << std::endl;
-                 std::cout << "Value: " << match[2] << std::endl;
-                 strvalue  = match[2];
-                 result = true;
-                 break;
+                 std::cout << "Section: " << match[0] << std::endl;
+                 sectionfindfirst = true;
+                 continue;
+              }
+           }
+           if(sectionfindfirst)
+           {
+              if (std::regex_search(line, match, value))
+              {
+                 if (key == match[1])
+                 {
+                    std::cout << "Key: " << match[1] << std::endl;
+                    std::cout << "Value: " << match[2] << std::endl;
+                    strvalue  = match[2];
+                    result = true;
+                    break;
+                 }
               }
            }
          }
@@ -88,6 +96,7 @@ bool ChickenConfiguration::getValue(std::string key, std::string &strvalue)
 bool ChickenConfiguration::getValue(std::string key, int &ivalue)
 {
     bool result = false;
+    bool sectionfindfirst = false;
     std::regex digits("[[:digit:]]+");
     std::string line;
     if (_file.is_open())
@@ -102,24 +111,31 @@ bool ChickenConfiguration::getValue(std::string key, int &ivalue)
            if (std::regex_search(line, match, section))
            {
               if (match[0] == _section_Selected)
-              std::cout << "Section: " << match[0] << std::endl;
-           }
-           else if (std::regex_search(line, match, value))
-           {
-              if (key == match[1])
               {
-                 std::cout << "Key: " << match[1] << std::endl;
-                 std::cout << "Value: " << match[2] << std::endl;
-                 std::string strmatch = match[2];
-
-                 if(std::regex_search(strmatch, match, digits))
+                 std::cout << "Section: " << match[0] << std::endl;
+                 sectionfindfirst = true;
+                 continue;
+              }
+           }
+           if(sectionfindfirst)
+           {
+              if (std::regex_search(line, match, value))
+              {
+                 if (key == match[1])
                  {
-                    std::string striValue = match[0];
-                    int test = std::atoi(striValue.c_str());
-                    ivalue = test;
-                    result = true;
-                    break;
-                 }  
+                    std::cout << "Key: " << match[1] << std::endl;
+                    std::cout << "Value: " << match[2] << std::endl;
+                    std::string strmatch = match[2];
+
+                    if(std::regex_search(strmatch, match, digits))
+                    {
+                       std::string striValue = match[0];
+                       int test = std::atoi(striValue.c_str());
+                       ivalue = test;
+                       result = true;
+                       break;
+                    }  
+                 }
               }
            }
          }
@@ -129,9 +145,7 @@ bool ChickenConfiguration::getValue(std::string key, int &ivalue)
 }
 
 void ChickenConfiguration::setValue(std::string strKey, std::string strVal)
-{
-    
-}
+{}
 
 void ChickenConfiguration::setSection(std::string section)
 {
