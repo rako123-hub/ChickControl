@@ -5,7 +5,7 @@
 
 enum State {OPEN, CLOSE, UNDEFIENED};
 
-const std::string RETURN_FAILURE_CONFIG = "999999999";
+//const std::string RETURN_FAILURE_CONFIG = "999999999";
 
 namespace std
 {

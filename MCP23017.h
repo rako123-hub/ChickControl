@@ -1,7 +1,11 @@
 #ifndef MCP23017_H
 #define MCP23017_H
 
+#include<iostream> 
 #include<vector>
+
+#include "GlobalDefs.h"
+#include "Serial_USB_I2C_Interface.h"
 
 #define GPIO_COUNT     16
 
@@ -28,6 +32,7 @@ class MCP23017
 {
     public:
     MCP23017();
+    MCP23017(Serial_I2C_Interface interface);
     ~MCP23017();
 
     private:
@@ -35,6 +40,9 @@ class MCP23017
     std::vector<std::string> _devAdr;
 
     void readMCP23017_Configuration();
+    void initDevices();
+    std::byte GetHWAdress();
+    Serial_I2C_Interface *interface  = nullptr;
 };
 
 

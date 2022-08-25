@@ -1,8 +1,7 @@
-#include <iostream> 
+
 
 #include "MCP23017.h"
 #include "ChickenConfiguration.h"
-
 
 
 const std::string config_section_MCP23017  = "[MCP23017]";
@@ -11,6 +10,16 @@ MCP23017::MCP23017()
 {
     std::printf("+++ MCP23017 Ctor\n");
     readMCP23017_Configuration();
+    initDevices();
+}
+
+
+MCP23017::MCP23017(Serial_I2C_Interface serialInterface)
+:interface(&serialInterface)
+{
+    std::printf("+++ MCP23017 Ctor\n");
+    readMCP23017_Configuration();
+    initDevices();   
 }
 
 MCP23017::~MCP23017()
@@ -42,4 +51,19 @@ void MCP23017::readMCP23017_Configuration()
     }
     
     std::printf("--- readMCP23017Config\n");
+}
+
+void MCP23017::initDevices()
+{
+    
+
+}
+
+std::byte MCP23017::GetHWAdress()
+{
+
+    std::byte adr;
+
+    return adr;
+    
 }
