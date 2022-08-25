@@ -13,8 +13,11 @@
 
 const std::string config_section_Interface = "[Serial_USB_I2C_Interface]";
 
+int counter = 0; 
+
 Serial_I2C_Interface::Serial_I2C_Interface()
 {
+    printf("+++ ctor Serial_I2C_Interface\n");
     readSerialDevConfiguration();
     if(initSerialDevice())
     {
@@ -26,6 +29,7 @@ Serial_I2C_Interface::Serial_I2C_Interface()
        setI2C_Clock();
        setInitOK(true);
     }
+    printf("--- ctor Serial_I2C_Interface\n");
 }
 
 Serial_I2C_Interface::~Serial_I2C_Interface()
@@ -144,14 +148,22 @@ void Serial_I2C_Interface::setBaudrate(termios *tty)
 
 bool Serial_I2C_Interface::checkSerialDevInfo()
 {
+    printf("+++ Serial_I2C_Interface::checkSerialDevInfo() counter:%d\n", counter);
+    bool result = false;
+    memset(&_readBuf[0], '\0', sizeof(_readBuf));
     strcpy(_writeBuf, DEVINFO.c_str());
     write_Serial(_writeBuf);
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
     read_Serial(_readBuf);
     printf("%s\n", _readBuf);
     std::string strRead(_readBuf);
-    if (strRead.find(INTERFACEINITSTRING) == 0) return false;
-    else return true;
+    if (!strRead.find(INTERFACEINITSTRING) == 0);
+    {
+        result = true;
+    }
+    printf("--- Serial_I2C_Interface::checkSerialDevInfo()\n");
+
+    counter++;
+    return result;
 }
 
 void Serial_I2C_Interface::setI2C_Clock()
@@ -174,13 +186,29 @@ void Serial_I2C_Interface::write_Serial(char *buf)
 void Serial_I2C_Interface::read_Serial(char *buf)
 {
     char readBuf[256];
-    int numBytes = 0;
+    int numBytes = 0, offset = 0, tries = 0, bytes_to_read = 100;
     memset(&readBuf, '\0', sizeof(readBuf));
-    numBytes = read(_serialUSB, &readBuf, sizeof(readBuf));
-    if( numBytes < 0)  std::printf("Error reading: %s", strerror(errno));
 
-    //std::printf("Bytes read %d \n", numBytes);
-    strcpy(buf, readBuf);
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+    while(true)
+    {
+       numBytes = read(_serialUSB, &readBuf[0] + offset, bytes_to_read);
+       if( numBytes < 0)
+       {  
+           std::printf("Error reading: %s\n", strerror(errno));
+           std::this_thread::sleep_for(std::chrono::milliseconds(50));
+           tries++;
+           if (tries > 3) break;
+       }
+       else
+       {
+           offset += numBytes;
+           if ( offset > (sizeof(readBuf) - bytes_to_read)) break;
+           if (numBytes == 0) break;
+       }
+   }
+   strcpy(buf, readBuf);
 }
 
 void Serial_I2C_Interface::setInitOK( bool init)
