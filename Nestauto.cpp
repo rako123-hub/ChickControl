@@ -50,7 +50,7 @@ void Nestauto::readNestautoConfiguration()
         key = "closedetect_" + std::to_string(i+1);
         if(chickConfig.getValue(key, strValue)) dev.close_detect = strValue;
 
-        _cylinderDevList.emplace_back(dev);
+        _cylinderDevVec.emplace_back(dev);
     }
 } 
 

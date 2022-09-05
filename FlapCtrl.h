@@ -6,9 +6,6 @@
 #include "TimeOpenClose.h"
 
 
-//enum FlapState {OPEN, CLOSE, UNDEFIENED};
-
-
 struct FlapData
 {
     std::string time_open;

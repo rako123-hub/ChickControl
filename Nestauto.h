@@ -26,7 +26,7 @@ struct CylinderDevice
     std::byte close_detect;   // switch close  [input]
     */
     std::string dir;            // direction bit [output]
-    std::string enable;         // enaböle bit   [output]
+    std::string enable;         // enable bit   [output]
     std::string open_detect;    // switch open   [input]
     std::string close_detect;   // switch close  [input]
 };
@@ -45,7 +45,7 @@ class Nestauto
     void doOpen();
     void doClose();
     NestautoData _nestData;
-    std::vector<CylinderDevice> _cylinderDevList;
+    std::vector<CylinderDevice> _cylinderDevVec;
 
     public:
     void doWork();
