@@ -1,17 +1,11 @@
 #ifndef GLOBALDEFS_H
 #define GLOBALDEFS_H
 
+//#include <cstdint>
 #include <string>
 
 enum State {OPEN, CLOSE, UNDEFIENED};
 
-//const std::string RETURN_FAILURE_CONFIG = "999999999";
-
-namespace std
-{
-  // define std::byte
-  enum class byte : unsigned char {};
-
-};
+typedef uint8_t byte;
 
 #endif

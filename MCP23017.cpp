@@ -6,6 +6,8 @@
 
 const std::string config_section_MCP23017  = "[MCP23017]";
 
+
+
 MCP23017::MCP23017()
 {
     std::printf("+++ MCP23017 Ctor\n");
@@ -55,15 +57,5 @@ void MCP23017::readMCP23017_Configuration()
 
 void MCP23017::initDevices()
 {
-    
 
-}
-
-std::byte MCP23017::GetHWAdress()
-{
-
-    std::byte adr;
-
-    return adr;
-    
 }

@@ -178,7 +178,7 @@ void Serial_I2C_Interface::setI2C_Clock()
 
 void Serial_I2C_Interface::write_Serial(char *buf)
 {
-
+    printf("WriteSerBuffer: %s\n", buf);
     int success = write(_serialUSB, buf, sizeof(buf));
     if(success < 0) std::printf("Can't write to serial interface \n");
 }
@@ -189,14 +189,14 @@ void Serial_I2C_Interface::read_Serial(char *buf)
     int numBytes = 0, offset = 0, tries = 0, bytes_to_read = 100;
     memset(&readBuf, '\0', sizeof(readBuf));
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
 
     while(true)
     {
        numBytes = read(_serialUSB, &readBuf[0] + offset, bytes_to_read);
        if( numBytes < 0)
        {  
-           std::printf("Error reading: %s\n", strerror(errno));
+ //         std::printf("Error reading: %s\n", strerror(errno));
            std::this_thread::sleep_for(std::chrono::milliseconds(50));
            tries++;
            if (tries > 3) break;
