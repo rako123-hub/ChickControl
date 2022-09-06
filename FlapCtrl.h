@@ -4,13 +4,13 @@
 #include <cstdlib>
 #include <thread>
 #include "TimeOpenClose.h"
+#include "GlobalDefs.h"
 
 
 struct FlapData
 {
     std::string time_open;
     std::string time_close;
-    uint8_t     state;
 };
 
 class FlapCtrl
@@ -27,6 +27,8 @@ class FlapCtrl
     TimeOpenClose *_timeopenclose;
     
     FlapData _flapData;
+    byte _state    = State::UNDEFIENED;
+    byte _oldState = State::UNDEFIENED;
 
     public:
     void doWork();

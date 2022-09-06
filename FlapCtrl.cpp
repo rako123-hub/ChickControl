@@ -42,9 +42,11 @@ void FlapCtrl::initTime()
 
 void FlapCtrl::doWork()
 {
-   _flapData.state = State::UNDEFIENED;
    bool open = _timeopenclose->detectOpenCloseTime();
 
-   if(open) _flapData.state = State::OPEN;
-   else     _flapData.state = State::CLOSE;
+   if(open) _state = State::OPEN;
+   else     _state = State::CLOSE;
+
+   //TODO
+   //verify _oldState vs _state
 }
