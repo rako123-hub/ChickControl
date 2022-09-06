@@ -22,13 +22,15 @@ class LightCtrl
 
     private:
     byte _intervall_count;
+    byte _state    = LightState::UNDEF;
+    byte _oldState = LightState::UNDEF;
 
     void readLightConfiguration();
 
     std::vector<LightData> _lightDataVec;
     std::string _light_IO;
     LightData _lightData;
-    TimeOpenClose *_timeopenclose = nullptr;
+    std::vector<TimeOpenClose*> _ptrTimeOpenCloseVec;
     void initTime();
 
     public:

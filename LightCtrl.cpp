@@ -12,9 +12,12 @@ LightCtrl::LightCtrl()
 }
 LightCtrl::~LightCtrl()
 {
-    if (_timeopenclose != nullptr)
+    for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
     {
-        delete _timeopenclose;
+        if(timeOpenClose != nullptr)
+        {
+            delete timeOpenClose;
+        }
     }
 }
 
@@ -41,10 +44,36 @@ void LightCtrl::readLightConfiguration()
 
 void LightCtrl::initTime()
 {
-   // _timeopenclose = new TimeOpenClose (_nestData.time_open, _nestData.time_close);
+   
+   TimeOpenClose *timeOpenClose = nullptr;
+   
+   for(LightData data : _lightDataVec)
+   {
+       timeOpenClose = new TimeOpenClose(data.time_on, data.time_off);
+       if(timeOpenClose != nullptr)
+       {
+           _ptrTimeOpenCloseVec.emplace_back(timeOpenClose);
+       }
+   }
 }
 
 void LightCtrl::doWork()
 {
-    
+    _state = LightState::OFF;
+    for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
+    {
+        bool lighton = timeOpenClose->detectOpenCloseTime();
+        if (lighton)          // if light is on at the first intervall break and swtch on the light otherwise switch on the light at second intervall
+        {
+            _state = LightState::ON;
+            break;
+        }
+    }
+    if(_oldState != _state)
+    {
+        _oldState = _state; 
+
+        //TODO
+        //switch on/off the light --> access to HW MCP1407 IO
+    }
 }
