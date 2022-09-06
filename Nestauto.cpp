@@ -36,7 +36,6 @@ void Nestauto::readNestautoConfiguration()
     key = "Cylinder"; 
     int iValue;
     if(chickConfig.getValue(key, iValue)) _nestData.cylinders = iValue;
-    _timeopenclose = new TimeOpenClose (_nestData.time_open, _nestData.time_close);
 
     for(int i = 0; i < _nestData.cylinders; i++ )
     {   CylinderDevice dev;
@@ -61,6 +60,11 @@ void Nestauto::doWork()
 
    if(open) _nestData.state = State::OPEN;
    else     _nestData.state = State::CLOSE;
+}
+
+void Nestauto::initTime()
+{
+    _timeopenclose = new TimeOpenClose (_nestData.time_open, _nestData.time_close);
 }
 
 

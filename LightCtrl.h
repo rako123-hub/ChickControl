@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "GlobalDefs.h"
+#include "TimeOpenClose.h"
 
 
 struct LightData
@@ -20,12 +21,18 @@ class LightCtrl
     ~LightCtrl();
 
     private:
-    byte intervall_count;
+    byte _intervall_count;
 
     void readLightConfiguration();
 
-    std::vector<LightData> lightDataVec;
-    std::string light_IO;
+    std::vector<LightData> _lightDataVec;
+    std::string _light_IO;
+    LightData _lightData;
+    TimeOpenClose *_timeopenclose = nullptr;
+    void initTime();
+
+    public:
+    void doWork();
 
 };
 

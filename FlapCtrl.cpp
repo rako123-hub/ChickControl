@@ -14,6 +14,7 @@ FlapCtrl::FlapCtrl()
     _flapData.time_open  = default_time_open;
     _flapData.time_close = default_time_close;
     readFlapCtrlConfiguration();
+    initTime();
 }
 
 FlapCtrl::~FlapCtrl()
@@ -31,9 +32,13 @@ void FlapCtrl::readFlapCtrlConfiguration()
     std::string strValue;
     if(chickConfig.getValue(key, strValue)) _flapData.time_open = strValue;
     key = "flap_close";
-    if(chickConfig.getValue(key, strValue)) _flapData.time_close = strValue;
-    _timeopenclose = new TimeOpenClose (_flapData.time_open, _flapData.time_close);
+    if(chickConfig.getValue(key, strValue)) _flapData.time_close = strValue;   
 } 
+
+void FlapCtrl::initTime()
+{
+    _timeopenclose = new TimeOpenClose (_flapData.time_open, _flapData.time_close);
+}
 
 void FlapCtrl::doWork()
 {

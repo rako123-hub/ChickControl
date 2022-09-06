@@ -44,6 +44,7 @@ class Nestauto
     TimeOpenClose *_timeopenclose;
     void doOpen();
     void doClose();
+    void initTime();
     NestautoData _nestData;
     std::vector<CylinderDevice> _cylinderDevVec;
 

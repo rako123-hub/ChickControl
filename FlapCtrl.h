@@ -21,8 +21,9 @@ class FlapCtrl
 
     private:
     void readFlapCtrlConfiguration();
-    void initThread();
+ //   void initThread();
     void doRun();
+    void initTime();
     TimeOpenClose *_timeopenclose;
     
     FlapData _flapData;

@@ -7,6 +7,7 @@
 #include "Nestauto.h"
 #include "FlapCtrl.h"
 #include "MCP23017.h"
+#include "LightCtrl.h"
 #include "Serial_USB_I2C_Interface.h"
 
 #include "ChickenConfiguration.h"
@@ -24,6 +25,7 @@ int main(int argc, char *argv[])
        MCP23017 mcp(interface);
        Nestauto nest;
        FlapCtrl flap;
+       LightCtrl light;
 
       while(true)
       {
@@ -31,6 +33,7 @@ int main(int argc, char *argv[])
          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
          nest.doWork();
          flap.doWork();
+         light.doWork();
 
          break;
       }
