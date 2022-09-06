@@ -11,7 +11,7 @@ class TimeOpenClose
     public:
     TimeOpenClose();
     TimeOpenClose(std::string open, std::string close);
-    bool getOpenState();
+ //   bool getOpenState();
     bool detectOpenCloseTime();             //return true is open state
     
     private:
