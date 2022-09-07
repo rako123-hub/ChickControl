@@ -73,6 +73,10 @@ class MCP23017
     std::vector<uint8_t> _gpio_dir;                                    //only Input/Output dir saved
     std::map<std::string, std::vector<uint8_t>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     Serial_I2C_Interface *interface  = nullptr;
+
+    public:
+    void setOutputPin(std::string gpioPin, byte value);
+    byte getPin(std::string gpioPin);
 };
 
 

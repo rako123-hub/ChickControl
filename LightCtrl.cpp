@@ -10,6 +10,13 @@ LightCtrl::LightCtrl()
 {
     readLightConfiguration();
 }
+
+LightCtrl::LightCtrl(MCP23017 mcp23017Device)
+:mcp23017(&mcp23017Device)
+{
+    readLightConfiguration();
+}
+
 LightCtrl::~LightCtrl()
 {
     for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
@@ -39,6 +46,7 @@ void LightCtrl::readLightConfiguration()
         _lightDataVec.emplace_back(_lightData);      
     }
     key = "light_IO";
+    strValue.empty();
     if(chickConfig.getValue(key, strValue)) _light_IO = strValue;
 }  
 
@@ -72,8 +80,9 @@ void LightCtrl::doWork()
     if(_oldState != _state)
     {
         _oldState = _state; 
-
-        //TODO
-        //switch on/off the light --> access to HW MCP1407 IO
+        if(mcp23017 != nullptr)
+        {
+            mcp23017->setOutputPin(_light_IO, _state);
+        }
     }
 }

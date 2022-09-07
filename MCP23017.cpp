@@ -15,7 +15,6 @@ MCP23017::MCP23017()
     initDevices();
 }
 
-
 MCP23017::MCP23017(Serial_I2C_Interface serialInterface)
 :interface(&serialInterface)
 {
@@ -58,4 +57,17 @@ void MCP23017::readMCP23017_Configuration()
 void MCP23017::initDevices()
 {
 
+}
+
+void MCP23017::setOutputPin(std::string gpioPin, byte val)
+{
+    
+}
+
+byte MCP23017::getPin(std::string gpioPin)
+{
+    byte pinState = 0xff;
+
+    return pinState;
+    
 }

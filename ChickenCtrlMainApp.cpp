@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
        MCP23017 mcp(interface);
        Nestauto nest;
        FlapCtrl flap;
-       LightCtrl light;
+       LightCtrl light(mcp);
 
       while(true)
       {

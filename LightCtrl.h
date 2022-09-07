@@ -5,6 +5,7 @@
 #include <vector>
 #include "GlobalDefs.h"
 #include "TimeOpenClose.h"
+#include "MCP23017.h"
 
 
 struct LightData
@@ -18,6 +19,7 @@ class LightCtrl
 {
     public:
     LightCtrl();
+    LightCtrl(MCP23017 mcp23017Device);
     ~LightCtrl();
 
     private:
@@ -32,6 +34,7 @@ class LightCtrl
     LightData _lightData;
     std::vector<TimeOpenClose*> _ptrTimeOpenCloseVec;
     void initTime();
+    MCP23017 *mcp23017 = nullptr;
 
     public:
     void doWork();
