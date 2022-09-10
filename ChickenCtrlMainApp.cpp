@@ -9,6 +9,7 @@
 #include "MCP23017.h"
 #include "LightCtrl.h"
 #include "Serial_USB_I2C_Interface.h"
+#include "I2C_Utils.h"
 
 #include "ChickenConfiguration.h"
 
@@ -21,11 +22,12 @@ int main(int argc, char *argv[])
    Serial_I2C_Interface interface;
    if(interface.getInitOK())
    {
+//      I2CUtils utils(interface);
        MCP23017 mcp(interface);
-       Nestauto nest;
-       FlapCtrl flap;
-       LightCtrl light(mcp);
-
+ //      Nestauto nest;
+ //     FlapCtrl flap;
+ //      LightCtrl light(mcp);
+/*
       while(true)
       {
          printf("main:: while loop\n");
@@ -35,8 +37,8 @@ int main(int argc, char *argv[])
          light.doWork();
          break;
       }
+*/
    }
-   
    std::cout << "Exit Chicken App";
    std::cout << "\n \n";
    
