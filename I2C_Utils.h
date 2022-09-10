@@ -1,5 +1,5 @@
-#ifndef I2C_UTILS_H
-#define I2C_UTILS_H
+#ifndef I2C_UT_H
+#define I2C_UT_H
 
 #include<iostream> 
 #include<cstring>
