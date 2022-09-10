@@ -1,5 +1,5 @@
 
-
+#include <regex>
 #include "MCP23017.h"
 
 
@@ -42,6 +42,9 @@ void MCP23017::readMCP23017_Configuration()
         std::string strVal;
         key = "DevAdress"; 
         if(!chickConfig->getValue(key, strVal)) continue;
+        std::regex pattern("0x|0X");
+        strVal = std::regex_replace(strVal, pattern, "");
+        _devAdrVec.emplace_back(strVal);
         _gpio_Adr_Dir_Map.insert(std::pair<std::string, std::vector<std::string>>(strVal, std::vector<std::string>()));  //add empty vector to key (strVal)
         readMCP23017_Dir_Config(chickConfig, strVal, i);
     }
@@ -59,12 +62,16 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
     {
        key = "GPIO_" + std::to_string(i) + "_" + std::to_string(devNum);
        std::string strVal;
-       if(chickConfig->getValue(key, strVal))  _gpio_Adr_Dir_Map[strAdr].emplace_back(strVal);
+       if(chickConfig->getValue(key, strVal))
+       {
+           _gpio_Adr_Dir_Map[strAdr].emplace_back(strVal);
+       }  
     }
 }
 
 void MCP23017::init_MCP23017_Devices()
 {
+    checkConnectedDevices();
     set_MCD230127_DirectionPins();
 
 }
@@ -77,16 +84,37 @@ void MCP23017::set_MCD230127_DirectionPins()
 /* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
 void MCP23017::checkConnectedDevices() 
 {
+    char recvBuf[256];
+    std::string strCommand;
+    std::string strAnswer;
     std::vector<std::string> connectedDevsVec;
-    
+    strCommand = "y31";
+    interface->write_Serial(strCommand);
+
+    for (const auto& elements : _gpio_Adr_Dir_Map)  //key --> elements.first, value --> elements.second
+    {
+        std::string devAdr = elements.first;
+        strCommand = "S " + devAdr + " 00 P";
+        interface->write_Serial(strCommand);
+        interface->read_Serial(strAnswer);
+        std::transform(strAnswer.begin(), strAnswer.end(), strAnswer.begin(), tolower);
+        if(strAnswer.find("kk") !=  std::string::npos )
+        {
+            connectedDevsVec.emplace_back(devAdr);
+        }
+
+        printf("Connected DevAdr : 0x%s\n",devAdr.c_str() );
+    }
+    strCommand = "y30";
+    interface->write_Serial(strCommand); 
 }
 
-void MCP23017::setOutputPin(std::string devAdr, std::string gpioPin, byte val)
+void MCP23017::setOutputPin(std::string gpioPin, byte val)
 {
     
 }
 
-byte MCP23017::getPin(std::string devAdr, std::string gpioPin)
+byte MCP23017::getPin(std::string gpioPin)
 {
     byte pinState = 0xff;
 

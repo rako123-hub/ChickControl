@@ -71,13 +71,14 @@ class MCP23017
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
     void set_MCD230127_DirectionPins();    
-    void checkConnectedDevices();                                               // only Input/Output dir saved
+    void checkConnectedDevices();                                           // only Input/Output dir saved
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
+    std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
     Serial_I2C_Interface *interface  = nullptr;
 
     public:
-    void setOutputPin(std::string adr, std::string gpioPin, byte value);
-    byte getPin(std::string adr, std::string gpioPin);
+    void setOutputPin(std::string gpioPin, byte value);
+    byte getPin(std::string gpioPin);
 };
 
 
