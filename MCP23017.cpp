@@ -48,9 +48,7 @@ void MCP23017::readMCP23017_Configuration()
         _gpio_Adr_Dir_Map.insert(std::pair<std::string, std::vector<std::string>>(strVal, std::vector<std::string>()));  //add empty vector to key (strVal)
         readMCP23017_Dir_Config(chickConfig, strVal, i);
     }
-
-    if(chickConfig != nullptr) delete chickConfig;
-    
+    if(chickConfig != nullptr) delete chickConfig;    
     std::printf("--- readMCP23017Config\n");
 }
 
@@ -72,12 +70,31 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
 void MCP23017::init_MCP23017_Devices()
 {
     checkConnectedDevices();
-    set_MCD230127_DirectionPins();
-
+    set_MCP230127_DirectionPins();
 }
 
-void MCP23017::set_MCD230127_DirectionPins()
+void MCP23017::set_MCP230127_DirectionPins()
 {
+    for ( std::string strAdr : _connectedDevsVec)
+    {
+        auto item = _gpio_Adr_Dir_Map.find(strAdr);       
+        if(item != _gpio_Adr_Dir_Map.end())
+        {
+           if(_gpio_Adr_Dir_Map[strAdr].capacity() == GPIO_COUNT)
+           {
+               for(int gpio = 0; gpio < 8; gpio++)
+               {
+//                   std::string strCommand = "S " + strAdr
+               }
+
+           }
+           else
+           {
+               std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
+           }
+
+        }
+    }
     
 }
 
@@ -87,7 +104,6 @@ void MCP23017::checkConnectedDevices()
     char recvBuf[256];
     std::string strCommand;
     std::string strAnswer;
-    std::vector<std::string> connectedDevsVec;
     strCommand = "y31";
     interface->write_Serial(strCommand);
 
@@ -100,10 +116,8 @@ void MCP23017::checkConnectedDevices()
         std::transform(strAnswer.begin(), strAnswer.end(), strAnswer.begin(), tolower);
         if(strAnswer.find("kk") !=  std::string::npos )
         {
-            connectedDevsVec.emplace_back(devAdr);
+            _connectedDevsVec.emplace_back(devAdr);
         }
-
-        printf("Connected DevAdr : 0x%s\n",devAdr.c_str() );
     }
     strCommand = "y30";
     interface->write_Serial(strCommand); 

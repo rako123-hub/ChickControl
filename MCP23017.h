@@ -57,7 +57,7 @@
 //#define SPI_READ    0x01
 
 
-enum Gpio_Direction {OUTPUT, INPUT, TRISTATE};               // outpout = 0, input = 1
+enum GPIO_DIR {OUTPUT, INPUT, TRISTATE};               // outpout = 0, input = 1
 
 class MCP23017
 {
@@ -70,10 +70,12 @@ class MCP23017
     void readMCP23017_Configuration();
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
-    void set_MCD230127_DirectionPins();    
-    void checkConnectedDevices();                                           // only Input/Output dir saved
+    void set_MCP230127_DirectionPins();    
+    void checkConnectedDevices();  
+    void deleteNotConnectedDevices(std::vector<std::string>);                                         
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
+    std::vector<std::string> _connectedDevsVec;                               
     Serial_I2C_Interface *interface  = nullptr;
 
     public:
