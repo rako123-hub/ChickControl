@@ -4,8 +4,10 @@
 #include<iostream> 
 #include<vector>
 #include<map>
+#include <utility>
 
 #include "GlobalDefs.h"
+#include "ChickenConfiguration.h"
 #include "Serial_USB_I2C_Interface.h"
 
 #define GPIO_COUNT     16
@@ -65,18 +67,17 @@ class MCP23017
     ~MCP23017();
 
     private:
-    int _devCount = 0; 
-    std::vector<std::string> _devAdr;
-
     void readMCP23017_Configuration();
-    void initDevices();
-    std::vector<uint8_t> _gpio_dir;                                    //only Input/Output dir saved
-    std::map<std::string, std::vector<uint8_t>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
+    void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
+    void init_MCP23017_Devices();
+    void set_MCD230127_DirectionPins();    
+    void checkConnectedDevices();                                               // only Input/Output dir saved
+    std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     Serial_I2C_Interface *interface  = nullptr;
 
     public:
-    void setOutputPin(std::string gpioPin, byte value);
-    byte getPin(std::string gpioPin);
+    void setOutputPin(std::string adr, std::string gpioPin, byte value);
+    byte getPin(std::string adr, std::string gpioPin);
 };
 
 

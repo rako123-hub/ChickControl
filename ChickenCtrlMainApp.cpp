@@ -12,7 +12,6 @@
 
 #include "ChickenConfiguration.h"
 
-
 std::string version("0.0.1");
 
 int main(int argc, char *argv[])
@@ -34,7 +33,6 @@ int main(int argc, char *argv[])
          nest.doWork();
          flap.doWork();
          light.doWork();
-
          break;
       }
    }
