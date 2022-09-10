@@ -41,7 +41,9 @@ class Serial_I2C_Interface
     
     public:
     void write_Serial(char *buf);
+    void write_Serial(std::string str);
     void read_Serial(char *buf);
+    void read_Serial(std::string &str);
     bool getInitOK();
 };
  

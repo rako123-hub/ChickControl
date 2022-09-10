@@ -13,7 +13,6 @@
 
 const std::string config_section_Interface = "[Serial_USB_I2C_Interface]";
 
-int counter = 0; 
 
 Serial_I2C_Interface::Serial_I2C_Interface()
 {
@@ -148,7 +147,6 @@ void Serial_I2C_Interface::setBaudrate(termios *tty)
 
 bool Serial_I2C_Interface::checkSerialDevInfo()
 {
-    printf("+++ Serial_I2C_Interface::checkSerialDevInfo() counter:%d\n", counter);
     bool result = false;
     memset(&_readBuf[0], '\0', sizeof(_readBuf));
     strcpy(_writeBuf, DEVINFO.c_str());
@@ -161,8 +159,6 @@ bool Serial_I2C_Interface::checkSerialDevInfo()
         result = true;
     }
     printf("--- Serial_I2C_Interface::checkSerialDevInfo()\n");
-
-    counter++;
     return result;
 }
 
@@ -181,6 +177,13 @@ void Serial_I2C_Interface::write_Serial(char *buf)
     printf("WriteSerBuffer: %s\n", buf);
     int success = write(_serialUSB, buf, sizeof(buf));
     if(success < 0) std::printf("Can't write to serial interface \n");
+}
+
+void Serial_I2C_Interface::write_Serial(std::string str)
+{
+    char buf[80];
+    strcpy(buf, str.c_str());
+    write_Serial(buf);
 }
 
 void Serial_I2C_Interface::read_Serial(char *buf)
@@ -209,6 +212,13 @@ void Serial_I2C_Interface::read_Serial(char *buf)
        }
    }
    strcpy(buf, readBuf);
+}
+
+void Serial_I2C_Interface::read_Serial(std::string &str)
+{
+    char buf[256];
+    read_Serial(buf);
+    str = buf;
 }
 
 void Serial_I2C_Interface::setInitOK( bool init)
