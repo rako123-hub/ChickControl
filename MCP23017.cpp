@@ -75,27 +75,51 @@ void MCP23017::init_MCP23017_Devices()
 
 void MCP23017::set_MCP230127_DirectionPins()
 {
-    for ( std::string strAdr : _connectedDevsVec)
+    for(std::string strAdr : _connectedDevsVec)
     {
         auto item = _gpio_Adr_Dir_Map.find(strAdr);       
         if(item != _gpio_Adr_Dir_Map.end())
         {
+           byte gpioPortOffset = 0x00;
            if(_gpio_Adr_Dir_Map[strAdr].capacity() == GPIO_COUNT)
            {
-               for(int gpio = 0; gpio < 8; gpio++)
+               for(int port = 0; port < GPIO_PORTS; port++ )
                {
-//                   std::string strCommand = "S " + strAdr
+                  byte byteVal  = 0x01;
+                  byte gpioPort = 0x00;
+                  byte temp     = 0x00;
+                  for(int gpio = gpioPortOffset; gpio < gpioPortOffset + 8; gpio++)
+                  {
+                       byteVal = 0x01;
+                       byteVal <<= gpio;
+                       if(_gpio_Adr_Dir_Map[strAdr].at(gpio) == "Input")    //Input --> gpioDir = 1
+                       {
+                           gpioPort = gpioPort | byteVal;
+                       }
+                       temp = gpio;                  
+                  }
+                  gpioPortOffset = temp + 1;
+                  std::string strCommand = "S " + strAdr + " P";
+                  interface->write_Serial(strCommand);
+                  std::string IODIR = hexTable[IODIRA];
+                  std::string GPPU  = hexTable[GPPUA];
+                  if(port == 1) 
+                  {
+                      IODIR = hexTable[IODIRB];
+                      GPPU  = hexTable[GPPUB]; 
+                  }
+                  strCommand = "S " + IODIR  + " " + hexTable[gpioPort] + " P";    //Dir PortA, PortB
+                  interface->write_Serial(strCommand);
+                  strCommand = "S " + GPPU + " " + hexTable[gpioPort] + " P";       // set pullups for INPUT
+                  interface->write_Serial(strCommand);  
                }
-
            }
            else
            {
                std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
            }
-
         }
-    }
-    
+    } 
 }
 
 /* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
@@ -131,7 +155,6 @@ void MCP23017::setOutputPin(std::string gpioPin, byte val)
 byte MCP23017::getPin(std::string gpioPin)
 {
     byte pinState = 0xff;
-
     return pinState;
     
 }
