@@ -93,7 +93,7 @@ class MCP23017
     void readMCP23017_Configuration();
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
-    void set_MCP230127_DirectionPins();    
+    void set_MCP230127_Dir_and_PullUp_Pins();    
     void checkConnectedDevices();  
     void deleteNotConnectedDevices(std::vector<std::string>);                                         
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved

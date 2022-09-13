@@ -70,10 +70,10 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
 void MCP23017::init_MCP23017_Devices()
 {
     checkConnectedDevices();
-    set_MCP230127_DirectionPins();
+    set_MCP230127_Dir_and_PullUp_Pins();
 }
 
-void MCP23017::set_MCP230127_DirectionPins()
+void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
 {
     for(std::string strAdr : _connectedDevsVec)
     {
@@ -83,15 +83,15 @@ void MCP23017::set_MCP230127_DirectionPins()
            byte gpioPortOffset = 0x00;
            if(_gpio_Adr_Dir_Map[strAdr].capacity() == GPIO_COUNT)
            {
+               byte temp = 0x00;
                for(int port = 0; port < GPIO_PORTS; port++ )
                {
                   byte byteVal  = 0x01;
                   byte gpioPort = 0x00;
-                  byte temp     = 0x00;
                   for(int gpio = gpioPortOffset; gpio < gpioPortOffset + 8; gpio++)
                   {
                        byteVal = 0x01;
-                       byteVal <<= gpio;
+                       byteVal <<= (gpio - gpioPortOffset);
                        if(_gpio_Adr_Dir_Map[strAdr].at(gpio) == "Input")    //Input --> gpioDir = 1
                        {
                            gpioPort = gpioPort | byteVal;
