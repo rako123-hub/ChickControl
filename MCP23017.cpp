@@ -14,8 +14,8 @@ MCP23017::MCP23017()
     init_MCP23017_Devices();
 }
 
-MCP23017::MCP23017(Serial_I2C_Interface serialInterface)
-:interface(&serialInterface)
+MCP23017::MCP23017(Serial_I2C_Interface *serialInterface)
+:interface(serialInterface)
 {
     std::printf("+++ MCP23017 Ctor\n");
     readMCP23017_Configuration();
@@ -114,10 +114,7 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
                   interface->write_Serial(strCommand);  
                }
            }
-           else
-           {
-               std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
-           }
+           else std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
         }
     } 
 }
@@ -147,17 +144,80 @@ void MCP23017::checkConnectedDevices()
     interface->write_Serial(strCommand); 
 }
 
-void MCP23017::setOutputPin(std::string gpioPin, byte val)
+void MCP23017::get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &portB)
 {
-    
+    //for e.g. strGPIOPin = LightIO Pin ===> GPIO_4:1  ===> Pin4 MCP23017 Device 1
+    int pos1 = strGpioDev.find("_");
+    int pos2 = strGpioDev.find(":");
+    std::string strGPIO = strGpioDev.substr(pos1 + 1 , pos2 - (pos1 + 1));
+    strAddr = strGpioDev.substr(pos2 + 1);
+    byte portOffset = 8;
+    byte gpioPin = atoi(strGPIO.c_str());
+    if(gpioPin > 7) //detect Port B
+    {
+        gpioPin -= portOffset;
+        portB = true;
+    }
+    byteVal= 0x01;
+    byteVal <<= gpioPin;
 }
 
-byte MCP23017::getPin(std::string gpioPin)
+void MCP23017::setOutputPin(std::string strGPIOPin_Dev, byte val)
+{
+    //for e.g. strGPIOPin = LightIO Pin ===> GPIO_4:1  ===> Pin4 MCP23017 Device 1
+    std::string strAddr = "";
+    byte byteVal        = 0x00;
+    bool portB          = false;
+    get_Adr_byteVal_Port(strGPIOPin_Dev, strAddr, byteVal, portB);
+    if(val == 0x01)
+    {
+        if(portB) _gpioPortB = _gpioPortB | byteVal;
+        else      _gpioPortA = _gpioPortA | byteVal;
+    }
+    else
+    { 
+        if(portB) _gpioPortB = _gpioPortB &~ byteVal;
+        else      _gpioPortA = _gpioPortA &~ byteVal;
+    }
+    int addrIndex = atoi(strAddr.c_str());
+    std::string strCommand = "S " + _devAdrVec[addrIndex - 1] + " P";
+    interface->write_Serial(strCommand);
+    std::string strPort  = hexTable[GPIOA];
+    byte gpioPort        = _gpioPortA;
+    if(portB)
+    {
+        strPort = hexTable[GPIOB];
+        gpioPort = _gpioPortB;
+    }
+    strCommand = "S " + strPort + " " + hexTable[gpioPort] + " P";
+    interface->write_Serial(strCommand);
+}
+
+byte MCP23017::getPin(std::string strGPIOPin_Dev)
 {
     byte pinState = 0xff;
-    return pinState;
-    
+    std::string strAddr = "";
+    byte byteVal        = 0x00;
+    bool portB          = false;
+    get_Adr_byteVal_Port(strGPIOPin_Dev, strAddr, byteVal, portB);
+
+    if(portB)
+    {
+
+    }
+    else
+    {
+        
+    }
+
+    //todo
+    //check reading port via serialInterface
+
+    return pinState;   
 }
+
+/*
+
 /*
 mymap.insert(pair<int,vector<int> >(10, vector<int>()));
 

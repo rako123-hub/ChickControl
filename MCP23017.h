@@ -58,7 +58,6 @@
 
 //#define SPI_READ    0x01
 
-//static const char* hexTable[256] = 
 static std::string hexTable[256] =
 {
     "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f", "10", "11",
@@ -86,7 +85,7 @@ class MCP23017
 {
     public:
     MCP23017();
-    MCP23017(Serial_I2C_Interface interface);
+    MCP23017(Serial_I2C_Interface *interface);
     ~MCP23017();
 
     private:
@@ -95,11 +94,14 @@ class MCP23017
     void init_MCP23017_Devices();
     void set_MCP230127_Dir_and_PullUp_Pins();    
     void checkConnectedDevices();  
-    void deleteNotConnectedDevices(std::vector<std::string>);                                         
+    void deleteNotConnectedDevices(std::vector<std::string>);           
+    void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);                           
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
     std::vector<std::string> _connectedDevsVec;                               
     Serial_I2C_Interface *interface  = nullptr;
+    byte _gpioPortA = 0x00;
+    byte _gpioPortB = 0x00;
 
     public:
     void setOutputPin(std::string gpioPin, byte value);

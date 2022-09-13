@@ -19,25 +19,26 @@ int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
    
-   Serial_I2C_Interface interface;
-   if(interface.getInitOK())
+   Serial_I2C_Interface *interface = new Serial_I2C_Interface();
+   if(interface->getInitOK())
    {
 //      I2CUtils utils(interface);
-       MCP23017 mcp(interface);
+       MCP23017 *mcp = new MCP23017(interface);
+       LightCtrl light(mcp);
  //      Nestauto nest;
  //     FlapCtrl flap;
- //      LightCtrl light(mcp);
-/*
+ //      
+
       while(true)
       {
          printf("main:: while loop\n");
          std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-         nest.doWork();
-         flap.doWork();
+  //       nest.doWork();
+   //      flap.doWork();
          light.doWork();
          break;
       }
-*/
+
    }
    std::cout << "Exit Chicken App";
    std::cout << "\n \n";

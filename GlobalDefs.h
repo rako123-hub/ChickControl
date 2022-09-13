@@ -5,7 +5,7 @@
 #include <string>
 
 enum State {OPEN, CLOSE, UNDEFIENED};
-enum LightState {ON, OFF, UNDEF};
+enum LightState {OFF, ON, UNDEF};
 
 typedef uint8_t byte;
 

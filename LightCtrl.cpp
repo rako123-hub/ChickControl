@@ -11,10 +11,11 @@ LightCtrl::LightCtrl()
     readLightConfiguration();
 }
 
-LightCtrl::LightCtrl(MCP23017 mcp23017Device)
-:mcp23017(&mcp23017Device)
+LightCtrl::LightCtrl(MCP23017 *mcp23017Device)
+:mcp23017(mcp23017Device)
 {
     readLightConfiguration();
+    initTime();
 }
 
 LightCtrl::~LightCtrl()

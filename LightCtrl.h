@@ -19,7 +19,7 @@ class LightCtrl
 {
     public:
     LightCtrl();
-    LightCtrl(MCP23017 mcp23017Device);
+    LightCtrl(MCP23017 *mcp23017Device);
     ~LightCtrl();
 
     private:
