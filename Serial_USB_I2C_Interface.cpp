@@ -149,8 +149,7 @@ bool Serial_I2C_Interface::checkSerialDevInfo()
 {
     bool result = false;
     memset(&_readBuf[0], '\0', sizeof(_readBuf));
-    strcpy(_writeBuf, DEVINFO.c_str());
-    write_Serial(_writeBuf);
+    write_Serial(DEVINFO);
     read_Serial(_readBuf);
     printf("%s\n", _readBuf);
     std::string strRead(_readBuf);
@@ -166,24 +165,21 @@ void Serial_I2C_Interface::setI2C_Clock()
 {
     std::string strClock("T");
     strClock += std::to_string(_serialConfig.busClock);
-
     printf("Command:%s\n", strClock.c_str());
-    strcpy(_writeBuf, strClock.c_str());
-    write_Serial(_writeBuf);
-}
-
-void Serial_I2C_Interface::write_Serial(char *buf)
-{
-    printf("WriteSerBuffer: %s\n", buf);
-    int success = write(_serialUSB, buf, sizeof(buf));
-    if(success < 0) std::printf("Can't write to serial interface \n");
+    write_Serial(strClock);
 }
 
 void Serial_I2C_Interface::write_Serial(std::string str)
 {
-    char buf[80];
+    char buf[50];
+    memset(&buf[0], '\0', sizeof(buf));
     strcpy(buf, str.c_str());
-    write_Serial(buf);
+    int len = strlen(buf);
+    printf("WriteSerBuffer: %s\n", buf);
+  //  printf("buf length : %d\n", len);
+    int success = write(_serialUSB, &buf[0], len);
+    if(success < 0) std::printf("Can't write to serial interface \n");
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 
 void Serial_I2C_Interface::read_Serial(char *buf)
@@ -199,7 +195,6 @@ void Serial_I2C_Interface::read_Serial(char *buf)
        numBytes = read(_serialUSB, &readBuf[0] + offset, bytes_to_read);
        if( numBytes < 0)
        {  
- //         std::printf("Error reading: %s\n", strerror(errno));
            std::this_thread::sleep_for(std::chrono::milliseconds(50));
            tries++;
            if (tries > 3) break;

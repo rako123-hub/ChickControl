@@ -40,6 +40,8 @@ int TimeOpenClose::getSeconds(std::string strTime)
     int hh, mm, ss, seconds = 0;
     sscanf(strTime.c_str(), "%2d:%2d:%2d", &hh, &mm, &ss);
 
+    printf("hour: %d, min: %d, sec: %d\n", hh, mm, ss);
+
     seconds = hh * 3600 + mm * 60 + ss;
 
     return seconds;

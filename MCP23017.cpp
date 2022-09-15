@@ -99,8 +99,6 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
                        temp = gpio;                  
                   }
                   gpioPortOffset = temp + 1;
-                  std::string strCommand = "S " + strAdr + " P";
-                  interface->write_Serial(strCommand);
                   std::string IODIR = hexTable[IODIRA];
                   std::string GPPU  = hexTable[GPPUA];
                   if(port == 1) 
@@ -108,10 +106,14 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
                       IODIR = hexTable[IODIRB];
                       GPPU  = hexTable[GPPUB]; 
                   }
-                  strCommand = "S " + IODIR  + " " + hexTable[gpioPort] + " P";    //Dir PortA, PortB
+                  std::string strCommand = "S " + strAdr + " " + IODIR  + " " + hexTable[gpioPort] + " P";    //Dir PortA, PortB
                   interface->write_Serial(strCommand);
-                  strCommand = "S " + GPPU + " " + hexTable[gpioPort] + " P";       // set pullups for INPUT
+                  interface->read_Serial(strCommand);
+                  std::printf("%s\n", strCommand.c_str());
+                  strCommand = "S " + strAdr + " " + GPPU + " " + hexTable[gpioPort] + " P";       // set pullups for INPUT
                   interface->write_Serial(strCommand);  
+                  interface->read_Serial(strCommand);
+                  std::printf("%s\n", strCommand.c_str());
                }
            }
            else std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
@@ -141,7 +143,7 @@ void MCP23017::checkConnectedDevices()
         }
     }
     strCommand = "y30";
-    interface->write_Serial(strCommand); 
+    //interface->write_Serial(strCommand); 
 }
 
 void MCP23017::get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &portB)
@@ -180,8 +182,7 @@ void MCP23017::setOutputPin(std::string strGPIOPin_Dev, byte val)
         else      _gpioPortA = _gpioPortA &~ byteVal;
     }
     int addrIndex = atoi(strAddr.c_str());
-    std::string strCommand = "S " + _devAdrVec[addrIndex - 1] + " P";
-    interface->write_Serial(strCommand);
+    strAddr =  _devAdrVec[addrIndex - 1];
     std::string strPort  = hexTable[GPIOA];
     byte gpioPort        = _gpioPortA;
     if(portB)
@@ -189,8 +190,10 @@ void MCP23017::setOutputPin(std::string strGPIOPin_Dev, byte val)
         strPort = hexTable[GPIOB];
         gpioPort = _gpioPortB;
     }
-    strCommand = "S " + strPort + " " + hexTable[gpioPort] + " P";
+    std::string strCommand = "S " + strAddr + " " + strPort + " " + hexTable[gpioPort] + " P";
     interface->write_Serial(strCommand);
+    interface->read_Serial(strCommand);
+    std::printf("%s\n", strCommand.c_str());
 }
 
 byte MCP23017::getPin(std::string strGPIOPin_Dev)
