@@ -33,7 +33,10 @@ int main(int argc, char *argv[])
    //      light->doWork();
          break;
       }
-
+   if(mcp != nullptr)
+   {
+      delete mcp;
+   }
    printf("Exit Chicken App\n");
    
    return EXIT_SUCCESS; // return value

@@ -17,7 +17,13 @@ MCP23017::MCP23017()
 }
 
 MCP23017::~MCP23017()
-{}
+{
+    if(_devI2C >= 0)
+    {
+        close(_devI2C);
+    }
+
+}
 
 bool MCP23017::openMCP23017Device()
 {
@@ -101,22 +107,46 @@ void MCP23017::checkConnectedDevices()
     {
         std::string devAdr = elements.first;
         int addr = std::stoi(devAdr);
-        byte address = 0x68;
         bool force = false;
-        if(_devI2C >= 0)
-        {
-           if (ioctl(_devI2C, force ? I2C_SLAVE_FORCE : I2C_SLAVE, address) < 0) 
-	       {
-		       printf("Failed to acquire bus access and/or talk to slave addr %d\n", address);
-		       continue;
-	       }
-           else
-          {
-               printf("Device %x connected to I2C Bus\n", address);
-              _connectedDevsVec.emplace_back(devAdr);
-           }
+        if (ioctl(_devI2C, force ? I2C_SLAVE_FORCE : I2C_SLAVE, 0x68) < 0) 
+	    {
+		    printf("Failed to acquire bus access and/or talk to slave addr %0x\n", addr);
+		    continue;
+	    }
+        else
+        {     
+            int result;
+            result = i2c_smbus_read_byte_data(_devI2C, 0x00);
+            if(result < 0)
+            {
+                printf("Failed to connect Device %0d on I2C Bus   %s\n", addr, strerror(errno));
+            }
+            else
+            {
+                printf("Value: %x\n", result);
+                printf("Device %0d connected to I2C Bus\n", addr);
+               _connectedDevsVec.emplace_back(devAdr);
+            }
+             /*            
+            byte bytes_to_read = 8;
+            char readBuf[8];
+            char writeBuf[1];
+            memset(&writeBuf, '\0', sizeof(writeBuf));
+            writeBuf[0] = 0x00;
+            printf("Try to connect to device %d ....\n", addr);
+            if(write(_devI2C, &writeBuf[0], 1) < 0) 
+            {
+                fprintf(stderr, "Error: Can't write to device: %s\n", strerror(errno));
+                continue;
+            }
+            if(read(_devI2C, &readBuf[0], bytes_to_read) < 0)
+            {
+                fprintf(stderr, "Error: Can't read from device: %s\n", strerror(errno));
+                continue;
+            } 
+            */
+            
         }
-        else printf("Filhnd _devI2C < o\n");
     }
 }
 

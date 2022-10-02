@@ -36,7 +36,7 @@ class Serial_I2C_Interface
 
     Serial_I2C_Interface_Config _serialConfig;
     char _readBuf[256];
-    bool _init = false;;
+    bool _init = false;
     
     public:
     void write_Serial(std::string str);
