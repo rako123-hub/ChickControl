@@ -2,6 +2,7 @@
 #define MCP23017_H
 
 #include <iostream> 
+#include <string>
 #include <vector>
 #include <map>
 #include <utility>
@@ -113,7 +114,7 @@ class MCP23017
 
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
-    std::vector<std::string> _connectedDevsVec;   
+    std::vector<byte> _connectedDevsVec;   
 };
 
 #endif
