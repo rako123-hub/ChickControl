@@ -83,7 +83,7 @@ void LightCtrl::doWork()
         _oldState = _state; 
         if(mcp23017 != nullptr)
         {
-            mcp23017->setOutputPin(_light_IO, _state);
+            //mcp23017->setOutputPin(_light_IO, _state);
         }
     }
 }

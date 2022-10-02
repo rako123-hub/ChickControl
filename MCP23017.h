@@ -1,10 +1,15 @@
 #ifndef MCP23017_H
 #define MCP23017_H
 
-#include<iostream> 
-#include<vector>
-#include<map>
+#include <iostream> 
+#include <vector>
+#include <map>
 #include <utility>
+#include <errno.h>              // Error integer and strerror() function
+#include <unistd.h>				//Needed for I2C port
+#include <fcntl.h>				//Needed for I2C port
+#include <sys/ioctl.h>			//Needed for I2C port
+#include <linux/i2c-dev.h>		//Needed for I2C port
 
 #include "GlobalDefs.h"
 #include "ChickenConfiguration.h"
@@ -85,10 +90,10 @@ class MCP23017
 {
     public:
     MCP23017();
-    MCP23017(Serial_I2C_Interface *interface);
     ~MCP23017();
 
     private:
+    bool openMCP23017Device();
     void readMCP23017_Configuration();
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
@@ -96,18 +101,19 @@ class MCP23017
     void checkConnectedDevices();  
     void deleteNotConnectedDevices(std::vector<std::string>);           
     void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);                           
-    std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
-    std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
-    std::vector<std::string> _connectedDevsVec;                               
-    Serial_I2C_Interface *interface  = nullptr;
     byte _gpioPortA = 0x00;
     byte _gpioPortB = 0x00;
+    bool _open      = false;
+    int _devI2C     = -1;
 
     public:
+    bool getOpen();
     void setOutputPin(std::string gpioPin, byte value);
     byte getPin(std::string gpioPin);
+
+    std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
+    std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
+    std::vector<std::string> _connectedDevsVec;   
 };
-
-
 
 #endif

@@ -1,29 +1,50 @@
-
 #include <regex>
 #include "MCP23017.h"
 
 
 const std::string config_section_MCP23017  = "[MCP23017]";
-
-
+const std::string strdevice                = "/dev/i2c-2";
 
 MCP23017::MCP23017()
 {
     std::printf("+++ MCP23017 Ctor\n");
+    
     readMCP23017_Configuration();
-    init_MCP23017_Devices();
-}
-
-MCP23017::MCP23017(Serial_I2C_Interface *serialInterface)
-:interface(serialInterface)
-{
-    std::printf("+++ MCP23017 Ctor\n");
-    readMCP23017_Configuration();
-    init_MCP23017_Devices();   
+    if(openMCP23017Device())
+    {
+       init_MCP23017_Devices();
+    }
 }
 
 MCP23017::~MCP23017()
 {}
+
+bool MCP23017::openMCP23017Device()
+{
+    printf("+++Open I2C device\n");
+    _open = false;
+	_devI2C = open(strdevice.c_str(), O_RDWR);
+	if (_devI2C < 0 ) 
+    {
+		if (errno == ENOENT) 
+        {
+			fprintf(stderr, "Error: Could not open file: %s  : %s\n", strdevice.c_str(), strerror(ENOENT));
+		} 
+        else 
+        {
+			fprintf(stderr, "Error: Could not open file "
+				"`%s': %s\n", strdevice.c_str(), strerror(errno));
+			if (errno == EACCES)
+				fprintf(stderr, "Run as root?\n");
+		}
+	}
+    else
+    {
+        _open = true;
+    }
+    printf("---Open I2C device\n");
+    return _open;
+}
 
 void MCP23017::readMCP23017_Configuration()
 {
@@ -49,7 +70,7 @@ void MCP23017::readMCP23017_Configuration()
         readMCP23017_Dir_Config(chickConfig, strVal, i);
     }
     if(chickConfig != nullptr) delete chickConfig;    
-    std::printf("--- readMCP23017Config\n");
+    printf("--- readMCP23017Config\n");
 }
 
 void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strAdr, int devNum)
@@ -70,9 +91,40 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
 void MCP23017::init_MCP23017_Devices()
 {
     checkConnectedDevices();
-    set_MCP230127_Dir_and_PullUp_Pins();
+//    set_MCP230127_Dir_and_PullUp_Pins();
 }
 
+/* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
+void MCP23017::checkConnectedDevices() 
+{
+    for (const auto& elements : _gpio_Adr_Dir_Map)  //key --> elements.first, value --> elements.second
+    {
+        std::string devAdr = elements.first;
+        int addr = std::stoi(devAdr);
+        byte address = 0x68;
+        bool force = false;
+        if(_devI2C >= 0)
+        {
+           if (ioctl(_devI2C, force ? I2C_SLAVE_FORCE : I2C_SLAVE, address) < 0) 
+	       {
+		       printf("Failed to acquire bus access and/or talk to slave addr %d\n", address);
+		       continue;
+	       }
+           else
+          {
+               printf("Device %x connected to I2C Bus\n", address);
+              _connectedDevsVec.emplace_back(devAdr);
+           }
+        }
+        else printf("Filhnd _devI2C < o\n");
+    }
+}
+
+bool MCP23017::getOpen()
+{
+    return _open;
+}
+/*
 void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
 {
     for(std::string strAdr : _connectedDevsVec)
@@ -107,12 +159,12 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
                       GPPU  = hexTable[GPPUB]; 
                   }
                   std::string strCommand = "S " + strAdr + " " + IODIR  + " " + hexTable[gpioPort] + " P";    //Dir PortA, PortB
-                  interface->write_Serial(strCommand);
-                  interface->read_Serial(strCommand);
+//                  interface->write_Serial(strCommand);
+//                  interface->read_Serial(strCommand);
                   std::printf("%s\n", strCommand.c_str());
                   strCommand = "S " + strAdr + " " + GPPU + " " + hexTable[gpioPort] + " P";       // set pullups for INPUT
-                  interface->write_Serial(strCommand);  
-                  interface->read_Serial(strCommand);
+ //                 interface->write_Serial(strCommand);  
+ //                 interface->read_Serial(strCommand);
                   std::printf("%s\n", strCommand.c_str());
                }
            }
@@ -120,113 +172,62 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
         }
     } 
 }
-
-/* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
-void MCP23017::checkConnectedDevices() 
-{
-    char recvBuf[256];
-    std::string strCommand;
-    std::string strAnswer;
-    strCommand = "y31";
-    interface->write_Serial(strCommand);
-
-    for (const auto& elements : _gpio_Adr_Dir_Map)  //key --> elements.first, value --> elements.second
-    {
-        std::string devAdr = elements.first;
-        strCommand = "S " + devAdr + " 00 P";
-        interface->write_Serial(strCommand);
-        interface->read_Serial(strAnswer);
-        std::transform(strAnswer.begin(), strAnswer.end(), strAnswer.begin(), tolower);
-        if(strAnswer.find("kk") !=  std::string::npos )
-        {
-            _connectedDevsVec.emplace_back(devAdr);
-        }
-    }
-    strCommand = "y30";
-    //interface->write_Serial(strCommand); 
-}
-
-void MCP23017::get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &portB)
-{
-    //for e.g. strGPIOPin = LightIO Pin ===> GPIO_4:1  ===> Pin4 MCP23017 Device 1
-    int pos1 = strGpioDev.find("_");
-    int pos2 = strGpioDev.find(":");
-    std::string strGPIO = strGpioDev.substr(pos1 + 1 , pos2 - (pos1 + 1));
-    strAddr = strGpioDev.substr(pos2 + 1);
-    byte portOffset = 8;
-    byte gpioPin = atoi(strGPIO.c_str());
-    if(gpioPin > 7) //detect Port B
-    {
-        gpioPin -= portOffset;
-        portB = true;
-    }
-    byteVal= 0x01;
-    byteVal <<= gpioPin;
-}
-
-void MCP23017::setOutputPin(std::string strGPIOPin_Dev, byte val)
-{
-    //for e.g. strGPIOPin = LightIO Pin ===> GPIO_4:1  ===> Pin4 MCP23017 Device 1
-    std::string strAddr = "";
-    byte byteVal        = 0x00;
-    bool portB          = false;
-    get_Adr_byteVal_Port(strGPIOPin_Dev, strAddr, byteVal, portB);
-    if(val == 0x01)
-    {
-        if(portB) _gpioPortB = _gpioPortB | byteVal;
-        else      _gpioPortA = _gpioPortA | byteVal;
-    }
-    else
-    { 
-        if(portB) _gpioPortB = _gpioPortB &~ byteVal;
-        else      _gpioPortA = _gpioPortA &~ byteVal;
-    }
-    int addrIndex = atoi(strAddr.c_str());
-    strAddr =  _devAdrVec[addrIndex - 1];
-    std::string strPort  = hexTable[GPIOA];
-    byte gpioPort        = _gpioPortA;
-    if(portB)
-    {
-        strPort = hexTable[GPIOB];
-        gpioPort = _gpioPortB;
-    }
-    std::string strCommand = "S " + strAddr + " " + strPort + " " + hexTable[gpioPort] + " P";
-    interface->write_Serial(strCommand);
-    interface->read_Serial(strCommand);
-    std::printf("%s\n", strCommand.c_str());
-}
-
-byte MCP23017::getPin(std::string strGPIOPin_Dev)
-{
-    byte pinState = 0xff;
-    std::string strAddr = "";
-    byte byteVal        = 0x00;
-    bool portB          = false;
-    get_Adr_byteVal_Port(strGPIOPin_Dev, strAddr, byteVal, portB);
-
-    if(portB)
-    {
-
-    }
-    else
-    {
-        
-    }
-
-    //todo
-    //check reading port via serialInterface
-
-    return pinState;   
-}
-
-/*
-
-/*
-mymap.insert(pair<int,vector<int> >(10, vector<int>()));
-
-You could then add whatever elements you want with something like:
-
-mymap[10].push_back(1);
-mymap[10].push_back(2);
-
 */
+
+
+
+/*
+
+#include <unistd.h>				//Needed for I2C port
+#include <fcntl.h>				//Needed for I2C port
+#include <sys/ioctl.h>			//Needed for I2C port
+#include <linux/i2c-dev.h>		//Needed for I2C port
+
+
+	int file_i2c;
+	int length;
+	unsigned char buffer[60] = {0};
+
+	
+	//----- OPEN THE I2C BUS -----
+	char *filename = (char*)"/dev/i2c-1";
+	if ((file_i2c = open(filename, O_RDWR)) < 0)
+	{
+		//ERROR HANDLING: you can check errno to see what went wrong
+		printf("Failed to open the i2c bus");
+		return;
+	}
+	
+	int addr = 0x5a;          //<<<<<The I2C address of the slave
+	if (ioctl(file_i2c, I2C_SLAVE, addr) < 0)
+	{
+		printf("Failed to acquire bus access and/or talk to slave.\n");
+		//ERROR HANDLING; you can check errno to see what went wrong
+		return;
+	}
+	
+	
+	//----- READ BYTES -----
+	length = 4;			//<<< Number of bytes to read
+	if (read(file_i2c, buffer, length) != length)		//read() returns the number of bytes actually read, if it doesn't match then an error occurred (e.g. no response from the device)
+	{
+		//ERROR HANDLING: i2c transaction failed
+		printf("Failed to read from the i2c bus.\n");
+	}
+	else
+	{
+		printf("Data read: %s\n", buffer);
+	}
+
+	
+	//----- WRITE BYTES -----
+	buffer[0] = 0x01;
+	buffer[1] = 0x02;
+	length = 2;			//<<< Number of bytes to write
+	if (write(file_i2c, buffer, length) != length)		//write() returns the number of bytes actually written, if it doesn't match then an error occurred (e.g. no response from the device)
+	{
+		 ERROR HANDLING: i2c transaction failed 
+		printf("Failed to write to the i2c bus.\n");
+	}
+*/
+

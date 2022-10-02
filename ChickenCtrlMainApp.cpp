@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream> 
+#include <ostream>
 #include <chrono>
 #include <thread>
 
@@ -13,35 +14,27 @@
 
 #include "ChickenConfiguration.h"
 
-std::string version("0.0.1");
+std::string version("0.0.2");
 
 int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
-   
-   Serial_I2C_Interface *interface = new Serial_I2C_Interface();
-   if(interface->getInitOK())
-   {
-//      I2CUtils utils(interface);
-       MCP23017 *mcp = new MCP23017(interface);
-       LightCtrl light(mcp);
- //      Nestauto nest;
- //     FlapCtrl flap;
- //      
+ //  MCP23017_Interface_ser *mcp = nullptr;
+   MCP23017 *mcp = new MCP23017();
 
+   LightCtrl *light = nullptr;
+ //  Serial_I2C_Interface *interface = new Serial_I2C_Interface();
       while(true)
       {
          printf("main:: while loop\n");
          std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   //       nest.doWork();
    //      flap.doWork();
-         light.doWork();
+   //      light->doWork();
          break;
       }
 
-   }
-   std::cout << "Exit Chicken App";
-   std::cout << "\n \n";
+   printf("Exit Chicken App\n");
    
    return EXIT_SUCCESS; // return value
 }
