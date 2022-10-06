@@ -22,7 +22,6 @@ MCP23017::~MCP23017()
     {
         close(_devI2C);
     }
-
 }
 
 bool MCP23017::openMCP23017Device()
@@ -97,7 +96,7 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
 void MCP23017::init_MCP23017_Devices()
 {
     checkConnectedDevices();
-//    set_MCP230127_Dir_and_PullUp_Pins();
+    set_MCP230127_Dir_and_PullUp_Pins();
 }
 
 /* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
@@ -107,12 +106,7 @@ void MCP23017::checkConnectedDevices()
     {
         std::string devAdr = elements.first;
         byte addr = std::stol( devAdr.c_str(), nullptr, 16 );
-        bool force = false;
-        if (ioctl(_devI2C, force ? I2C_SLAVE_FORCE : I2C_SLAVE, addr) < 0) 
-	    {
-		    printf("Failed to acquire bus access and/or talk to slave addr %0x\n", addr);
-		    continue;
-	    }
+        if (!setDevAdr(addr)) continue;
         else
         {     
             int result = i2c_smbus_read_byte_data(_devI2C, 0x00);
@@ -123,26 +117,43 @@ void MCP23017::checkConnectedDevices()
             else
             {
                 printf("Device %0x connected to I2C Bus\n", addr);
-               _connectedDevsVec.emplace_back(addr);
+               _connectedDevsVec.emplace_back(devAdr);
             }
         }
     }
+}
+
+bool MCP23017::setDevAdr(byte addr)
+{
+    bool result = true;
+    bool force = false;
+    if (ioctl(_devI2C, force ? I2C_SLAVE_FORCE : I2C_SLAVE, addr) < 0) 
+    {
+        printf("Failed to acquire bus access and/or talk to slave addr %0x\n", addr);
+        result = false;
+    }
+    return result;
 }
 
 bool MCP23017::getOpen()
 {
     return _open;
 }
-/*
+
 void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
 {
+    printf("+++ set_MCP230127_Dir_and_PullUp_Pins\n");
     for(std::string strAdr : _connectedDevsVec)
     {
+        printf("adr:: %s\n", strAdr.c_str());
+        byte addr = std::stol( strAdr.c_str(), nullptr, 16 );
+        setDevAdr(addr);
         auto item = _gpio_Adr_Dir_Map.find(strAdr);       
         if(item != _gpio_Adr_Dir_Map.end())
         {
            byte gpioPortOffset = 0x00;
-           if(_gpio_Adr_Dir_Map[strAdr].capacity() == GPIO_COUNT)
+           //if(_gpio_Adr_Dir_Map[strAdr].capacity() == GPIO_COUNT)
+           if(_gpio_Adr_Dir_Map[strAdr].size() == GPIO_COUNT)
            {
                byte temp = 0x00;
                for(int port = 0; port < GPIO_PORTS; port++ )
@@ -160,28 +171,80 @@ void MCP23017::set_MCP230127_Dir_and_PullUp_Pins()
                        temp = gpio;                  
                   }
                   gpioPortOffset = temp + 1;
-                  std::string IODIR = hexTable[IODIRA];
-                  std::string GPPU  = hexTable[GPPUA];
+                  byte dirReg = IODIRA;
+                  byte gppu   = GPPUA;
                   if(port == 1) 
                   {
-                      IODIR = hexTable[IODIRB];
-                      GPPU  = hexTable[GPPUB]; 
+                      dirReg = IODIRB;
+                      gppu   = GPPUB; 
                   }
-                  std::string strCommand = "S " + strAdr + " " + IODIR  + " " + hexTable[gpioPort] + " P";    //Dir PortA, PortB
-//                  interface->write_Serial(strCommand);
-//                  interface->read_Serial(strCommand);
-                  std::printf("%s\n", strCommand.c_str());
-                  strCommand = "S " + strAdr + " " + GPPU + " " + hexTable[gpioPort] + " P";       // set pullups for INPUT
- //                 interface->write_Serial(strCommand);  
- //                 interface->read_Serial(strCommand);
-                  std::printf("%s\n", strCommand.c_str());
+                  writeData(dirReg, gpioPort); //set direction pins
+                  writeData(gppu, gpioPort);   // set pullups for InputPins
                }
            }
            else std::printf("ERROR *** MCP23017:: Map capacity != GPIOCOUNT\n");
         }
     } 
+    printf("--- set_MCP230127_Dir_and_PullUp_Pins\n");
 }
-*/
+
+void MCP23017::setOutputPin(std::string strGPIOPin, byte value)
+{
+    /* GPIO_0:1 */  // pin 0, device 1
+    printf("+++ setOutputPin\n");
+    std::vector<std::string> tokens;
+    std::regex re("\\d+");
+    std::sregex_token_iterator begin(strGPIOPin.begin(), strGPIOPin.end(), re), end;
+    std::copy(begin, end, std::back_inserter(tokens));
+    byte pin    = 0x00;
+    byte device = 0x00;
+    if(tokens.size() > 1)
+    {
+        pin = atoi(tokens[0].c_str());
+        device = atoi(tokens[1].c_str());
+        device--;
+    }
+    setDevAdr(getDeviceAddr(device));
+    byte byteVal = 0x01;
+    byte port = _gpioPortA;
+    byte reg  = GPIOA;
+    if (pin > 7)
+    {
+        pin  = pin - 8;
+        port = _gpioPortB;
+        reg  = GPIOB;
+    }
+    byteVal = byteVal << pin;
+    if(value == 0x01) port = port | byteVal;
+    else port = port & ~byteVal;
+    writeData(reg, port);
+    if(pin > 7) _gpioPortB = port;
+    else _gpioPortA = port;
+    printf("--- setOutputPin\n");
+}
+
+bool MCP23017::writeData(byte reg, byte value)
+{
+    bool result = true;
+    if(i2c_smbus_write_byte_data(_devI2C, reg, value) < 0) 
+    {
+        printf("Failed to write data to MCP23017 device\n");
+        result = false;
+    }
+    return result;
+}
+
+byte MCP23017::getDeviceAddr(byte index)
+{
+    byte addr = 0x00;
+    if(_connectedDevsVec.size() > index)
+    {
+        std::string strAdr = _connectedDevsVec[0];
+        addr = std::stol(strAdr.c_str(), nullptr, 16);
+    } 
+    return addr;
+}
+
 
 
 

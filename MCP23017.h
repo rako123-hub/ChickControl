@@ -14,7 +14,6 @@
 
 #include "GlobalDefs.h"
 #include "ChickenConfiguration.h"
-#include "Serial_USB_I2C_Interface.h"
 
 #define GPIO_COUNT     16
 #define GPIO_PORTS      2      // Port A and Port B
@@ -64,6 +63,7 @@
 
 //#define SPI_READ    0x01
 
+/*
 static std::string hexTable[256] =
 {
     "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f", "10", "11",
@@ -82,7 +82,7 @@ static std::string hexTable[256] =
     "ea", "eb", "ec", "ed", "ee", "ef", "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fa", "fb",
     "fc", "fd", "fe", "ff"
 };
-
+*/
 
 
 enum GPIO_DIR {OUTPUT, INPUT, TRISTATE};               // outpout = 0, input = 1
@@ -101,11 +101,14 @@ class MCP23017
     void set_MCP230127_Dir_and_PullUp_Pins();    
     void checkConnectedDevices();  
     void deleteNotConnectedDevices(std::vector<std::string>);           
-    void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);                           
+    void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);   
+    bool setDevAdr(byte addr);                        
     byte _gpioPortA = 0x00;
     byte _gpioPortB = 0x00;
     bool _open      = false;
     int _devI2C     = -1;
+    bool writeData(byte reg, byte data);
+    byte getDeviceAddr(byte index);
 
     public:
     bool getOpen();
@@ -114,7 +117,7 @@ class MCP23017
 
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
     std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
-    std::vector<byte> _connectedDevsVec;   
+    std::vector<std::string> _connectedDevsVec;   
 };
 
 #endif
