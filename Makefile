@@ -17,9 +17,10 @@ SRCS := $(wildcard *.cpp)
 # $(patsubst %.cpp,%.o,$(SRCS)): substitute all ".cpp" file name strings to ".o" file name strings
 OBJS := $(patsubst %.cpp,%.o,$(SRCS))
 
+
 all: clearbuild $(TARGET) copy clear
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^
+	$(CC) -o $@ $^ 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 

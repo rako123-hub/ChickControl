@@ -1,4 +1,5 @@
 #include <regex>
+#include <thread>
 #include "MCP23017.h"
 
 
@@ -8,11 +9,17 @@ const std::string strdevice                = "/dev/i2c-2";
 MCP23017::MCP23017()
 {
     std::printf("+++ MCP23017 Ctor\n");
-    
+    /*
     readMCP23017_Configuration();
     if(openMCP23017Device())
     {
        init_MCP23017_Devices();
+    }
+    */
+    if(openMCP23017Device())
+    {
+       setDevAdr(0x20);
+       setDirOutPut();
     }
 }
 
@@ -22,6 +29,23 @@ MCP23017::~MCP23017()
     {
         close(_devI2C);
     }
+}
+
+void MCP23017::setDirOutPut()
+{
+    //default pins are input 0xff
+    byte val = 0xaa;
+    val = readData(IODIRA);
+    printf("IODIRA after reset ::0x%x\n", val);
+    writeData(IODIRA, 0x00); //set direction output
+    val = readData(IODIRA);
+    printf("IODIRA::0x%x\n", val);
+
+    val = readData(IODIRB);
+    printf("IODIRB after reset ::0%x\n", val);
+    writeData(IODIRB, 0x00); //set direction output
+    val = readData(IODIRB);
+    printf("IODIRB::0x%x\n", val);
 }
 
 bool MCP23017::openMCP23017Device()
@@ -132,6 +156,10 @@ bool MCP23017::setDevAdr(byte addr)
         printf("Failed to acquire bus access and/or talk to slave addr %0x\n", addr);
         result = false;
     }
+    else
+    {
+        printf("SetDevAddress:: %0x\n", addr);
+    }
     return result;
 }
 
@@ -192,6 +220,7 @@ void MCP23017::setOutputPin(std::string strGPIOPin, byte value)
 {
     /* GPIO_0:1 */  // pin 0, device 1
     printf("+++ setOutputPin\n");
+    printf("Pin::%s, value::%d\n", strGPIOPin.c_str(), value);
     std::vector<std::string> tokens;
     std::regex re("\\d+");
     std::sregex_token_iterator begin(strGPIOPin.begin(), strGPIOPin.end(), re), end;
@@ -223,15 +252,37 @@ void MCP23017::setOutputPin(std::string strGPIOPin, byte value)
     printf("--- setOutputPin\n");
 }
 
+void MCP23017::setOutputPin(byte value)
+{
+    if(value == 0x01)
+    {
+        printf("write 0xff\n");
+        writeData(GPIOA, 0xff);
+    }
+    else
+    {
+        printf("write 0x00\n");
+        writeData(GPIOA, 0x00);
+    }
+}
+
 bool MCP23017::writeData(byte reg, byte value)
 {
     bool result = true;
+
     if(i2c_smbus_write_byte_data(_devI2C, reg, value) < 0) 
     {
         printf("Failed to write data to MCP23017 device\n");
         result = false;
     }
     return result;
+}
+
+byte MCP23017::readData(byte reg)
+{
+    byte val = 0x55;
+    val = i2c_smbus_read_byte_data(_devI2C, reg);
+    return val;
 }
 
 byte MCP23017::getDeviceAddr(byte index)
@@ -244,6 +295,7 @@ byte MCP23017::getDeviceAddr(byte index)
     } 
     return addr;
 }
+
 
 
 

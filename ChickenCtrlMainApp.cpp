@@ -12,7 +12,7 @@
 
 #include "ChickenConfiguration.h"
 
-std::string version("0.0.2");
+std::string version("1.0.0");
 
 int main(int argc, char *argv[])
 {
@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
   //      nest.doWork();
    //     flap.doWork();
       light->doWork();
-      break; 
+//   break; 
    }
    if(mcp != nullptr)
    {

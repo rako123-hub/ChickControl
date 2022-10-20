@@ -83,7 +83,10 @@ void LightCtrl::doWork()
         _oldState = _state; 
         if(mcp23017 != nullptr)
         {
-            mcp23017->setOutputPin(_light_IO, _state);
+            //mcp23017->setOutputPin(_light_IO, _state);
+
+            /* implemeted for quick release*/
+            mcp23017->setOutputPin(_state); // this is the setoutputpin fpr all pins -->0xff
         }
     }
 }

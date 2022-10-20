@@ -85,7 +85,7 @@ static std::string hexTable[256] =
 */
 
 
-enum GPIO_DIR {OUTPUT, INPUT, TRISTATE};               // outpout = 0, input = 1
+//enum GPIO_DIR {OUTPUT1, INPUT1, TRISTATE};               // outpout = 0, input = 1
 
 class MCP23017
 {
@@ -108,11 +108,14 @@ class MCP23017
     bool _open      = false;
     int _devI2C     = -1;
     bool writeData(byte reg, byte data);
+    byte readData(byte reg);
     byte getDeviceAddr(byte index);
+    void setDirOutPut();
 
     public:
     bool getOpen();
     void setOutputPin(std::string gpioPin, byte value);
+    void setOutputPin(byte value);
     byte getPin(std::string gpioPin);
 
     std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
