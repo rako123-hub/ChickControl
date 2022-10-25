@@ -12,7 +12,7 @@
 
 #include "ChickenConfiguration.h"
 
-std::string version("1.0.0");
+std::string version("1.0.1");
 
 int main(int argc, char *argv[])
 {
