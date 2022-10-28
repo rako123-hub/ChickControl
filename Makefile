@@ -5,7 +5,8 @@ CFLAGSM        =
 CFLAGSREL      = -O2 -g -v
 CFLAGSDBG      = -g3 -O0 -D_DEBUG -v
 CFLAGSBUILD=$(CFLAGSREL)
-CFLAGS         = -std=gnu++11 -Wall -Wextra -pedantic $(CFLAGSBUILD) $(CFLAGSM)
+CFLAGS         = -std=gnu++11 -Wall -Wextra -pedantic $(CFLAGSBUILD) $(CFLAGSM) 
+LIBS=-pthread
 
 MKDIR_P        = mkdir -p
 OBJDIR         = ./build
@@ -20,7 +21,7 @@ OBJS := $(patsubst %.cpp,%.o,$(SRCS))
 
 all: clearbuild $(TARGET) copy clear
 $(TARGET): $(OBJS)
-	$(CC) -o $@ $^ 
+	$(CC) -o  $@ $^ $(LIBS)
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $<
 
