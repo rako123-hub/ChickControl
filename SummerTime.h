@@ -14,13 +14,14 @@ class SummerTime
 
     public:
     bool getSummerTimeChange();
+    void storeNewRTCTime();
 
     private:
     void createTimeThread();
 
     std::thread *_thread = nullptr;
     void checkTimeChangeThread();
-    std::chrono::time_point<std::chrono::steady_clock> oldTime;
+    std::chrono::time_point<std::chrono::system_clock> oldTime;
     bool summer_winter_change = false;
 
 };

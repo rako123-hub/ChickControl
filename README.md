@@ -12,5 +12,6 @@ start TimeSetter:
 TimeGetSetMainApp getLocal_setRTC   or
 TimeGetSetMainApp getRTC_setLocal
 
-
+set Time via Terminal:
+date -s hh:mm
 

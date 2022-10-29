@@ -12,31 +12,66 @@
 #include "ChickenConfiguration.h"
 #include "SummerTime.h"
 
-std::string version("1.0.1");
+std::string version("2.0.0");
+
+MCP23017   *mcp    = nullptr;
+LightCtrl  *light  = nullptr;
+SummerTime *summer = nullptr;
+
+void deleteControlObjects()
+{
+  
+   if(light != nullptr)
+   {
+      delete light;
+      light = nullptr;
+   }
+
+   if(mcp != nullptr)
+   {
+      delete mcp;
+      mcp = nullptr;
+   }
+}
+
+void restartControlObjects()
+{
+   mcp = new MCP23017();
+   light = new LightCtrl(mcp);
+}
 
 int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
-   MCP23017 *mcp = new MCP23017();
-   LightCtrl *light = new LightCtrl(mcp);
-   SummerTime *summer = new SummerTime();
+   mcp = new MCP23017();
+   light = new LightCtrl(mcp);
+   summer = new SummerTime();
+   
    while(true)
    {
       printf("main:: while loop\n");
       std::this_thread::sleep_for(std::chrono::milliseconds(2000));
   //      nest.doWork();
    //     flap.doWork();
-      light->doWork();
+      if (light != nullptr) light->doWork();
+      if(summer->getSummerTimeChange())
+      {
+         printf("SummerTime change detect!\n");
+         deleteControlObjects();
+         summer->storeNewRTCTime();
+         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+         restartControlObjects();
+      }
 //   break; 
    }
-   if(mcp != nullptr)
+
+   deleteControlObjects();
+   if(summer != nullptr)
    {
-      delete mcp;
+      delete summer;
+      summer = nullptr;
    }
-   if(light != nullptr)
-   {
-      delete light;
-   }
+  
    printf("Exit Chicken App\n");
    
    return EXIT_SUCCESS; // return value
