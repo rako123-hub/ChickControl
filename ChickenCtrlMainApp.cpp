@@ -9,8 +9,8 @@
 #include "FlapCtrl.h"
 #include "MCP23017.h"
 #include "LightCtrl.h"
-
 #include "ChickenConfiguration.h"
+#include "SummerTime.h"
 
 std::string version("1.0.1");
 
@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
    MCP23017 *mcp = new MCP23017();
-
    LightCtrl *light = new LightCtrl(mcp);
+   SummerTime *summer = new SummerTime();
    while(true)
    {
       printf("main:: while loop\n");

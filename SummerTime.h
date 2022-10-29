@@ -3,6 +3,7 @@
 
 #include <thread>
 #include <cstdlib>
+#include <chrono>
 
 
 class SummerTime
@@ -11,11 +12,16 @@ class SummerTime
     SummerTime();
     ~SummerTime();
 
+    public:
+    bool getSummerTimeChange();
+
     private:
     void createTimeThread();
 
     std::thread *_thread = nullptr;
-    void checkTimeChange();
+    void checkTimeChangeThread();
+    std::chrono::time_point<std::chrono::steady_clock> oldTime;
+    bool summer_winter_change = false;
 
 };
 
