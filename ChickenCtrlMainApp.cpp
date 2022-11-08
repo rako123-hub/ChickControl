@@ -11,12 +11,14 @@
 #include "LightCtrl.h"
 #include "ChickenConfiguration.h"
 #include "SummerTime.h"
+#include "DS3231.h"
 
 std::string version("2.0.0");
 
 MCP23017   *mcp    = nullptr;
 LightCtrl  *light  = nullptr;
 SummerTime *summer = nullptr;
+DS3231     *rtc    = nullptr;
 
 void deleteControlObjects()
 {
@@ -43,10 +45,19 @@ void restartControlObjects()
 int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
-   mcp = new MCP23017();
-   light = new LightCtrl(mcp);
+
+   rtc    = new DS3231();
+   rtc->getDS3231_setLocalTime();
+   if(rtc != nullptr)
+   {
+      delete rtc;
+      rtc = nullptr;
+   }
+
+   mcp    = new MCP23017();
+   light  = new LightCtrl(mcp);
    summer = new SummerTime();
-   
+  
    while(true)
    {
       printf("main:: while loop\n");

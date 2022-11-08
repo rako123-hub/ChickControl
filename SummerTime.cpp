@@ -38,7 +38,7 @@ void SummerTime::checkTimeChangeThread()
         std::printf("SummerTime Thread  running\n");
         std::this_thread::sleep_for(std::chrono::seconds(10));
         std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
-        std::time_t time_now = std::chrono::system_clock::to_time_t(now); 
+//        std::time_t time_now = std::chrono::system_clock::to_time_t(now); 
 
         int diff = std::chrono::duration_cast<std::chrono::seconds>(now - oldTime).count();
 
