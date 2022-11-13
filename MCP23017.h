@@ -1,14 +1,19 @@
 #ifndef MCP23017_H
 #define MCP23017_H
 
-#include<iostream> 
-#include<vector>
-#include<map>
+#include <iostream> 
+#include <string>
+#include <vector>
+#include <map>
 #include <utility>
+#include <errno.h>              // Error integer and strerror() function
+#include <unistd.h>				//Needed for I2C port
+#include <fcntl.h>				//Needed for I2C port
+#include <sys/ioctl.h>			//Needed for I2C port
+#include <linux/i2c-dev.h>		//Needed for I2C port
 
 #include "GlobalDefs.h"
 #include "ChickenConfiguration.h"
-#include "Serial_USB_I2C_Interface.h"
 
 #define GPIO_COUNT     16
 #define GPIO_PORTS      2      // Port A and Port B
@@ -58,6 +63,7 @@
 
 //#define SPI_READ    0x01
 
+/*
 static std::string hexTable[256] =
 {
     "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "0a", "0b", "0c", "0d", "0e", "0f", "10", "11",
@@ -76,38 +82,45 @@ static std::string hexTable[256] =
     "ea", "eb", "ec", "ed", "ee", "ef", "f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7", "f8", "f9", "fa", "fb",
     "fc", "fd", "fe", "ff"
 };
+*/
 
 
-
-enum GPIO_DIR {OUTPUT, INPUT, TRISTATE};               // outpout = 0, input = 1
+//enum GPIO_DIR {OUTPUT1, INPUT1, TRISTATE};               // outpout = 0, input = 1
 
 class MCP23017
 {
     public:
     MCP23017();
-    MCP23017(Serial_I2C_Interface *interface);
     ~MCP23017();
 
     private:
+    bool openMCP23017Device();
     void readMCP23017_Configuration();
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
     void set_MCP230127_Dir_and_PullUp_Pins();    
     void checkConnectedDevices();  
     void deleteNotConnectedDevices(std::vector<std::string>);           
-    void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);                           
-    std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
-    std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
-    std::vector<std::string> _connectedDevsVec;                               
-    Serial_I2C_Interface *interface  = nullptr;
+    void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);   
+    bool setDevAdr(byte addr);                        
     byte _gpioPortA = 0x00;
     byte _gpioPortB = 0x00;
+    bool _open      = false;
+    int _devI2C     = -1;
+    bool writeData(byte reg, byte data);
+    byte readData(byte reg);
+    byte getDeviceAddr(byte index);
+    void setDirOutPut();
 
     public:
+    bool getOpen();
     void setOutputPin(std::string gpioPin, byte value);
+    void setOutputPin(byte value);
     byte getPin(std::string gpioPin);
+
+    std::map<std::string, std::vector<std::string>> _gpio_Adr_Dir_Map;     // key Dev Adress with vector Input/Output saved
+    std::vector<std::string> _devAdrVec;                                   //asociate DevNumber with its DevAddress
+    std::vector<std::string> _connectedDevsVec;   
 };
-
-
 
 #endif

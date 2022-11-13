@@ -26,7 +26,7 @@ bool TimeOpenClose::detectOpenCloseTime()
 
     if ((seconds_now - seconds_open) > 0) open = true;
     if ((seconds_now - seconds_close) > 0) open = false;
-      
+     
     printf("\n");
     if (open) printf("*****OPEN*****\n");       
     else      printf("*****CLOSE****\n");
@@ -40,7 +40,7 @@ int TimeOpenClose::getSeconds(std::string strTime)
     int hh, mm, ss, seconds = 0;
     sscanf(strTime.c_str(), "%2d:%2d:%2d", &hh, &mm, &ss);
 
-    printf("hour: %d, min: %d, sec: %d\n", hh, mm, ss);
+  //  printf("hour: %d, min: %d, sec: %d\n", hh, mm, ss);
 
     seconds = hh * 3600 + mm * 60 + ss;
 

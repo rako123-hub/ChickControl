@@ -5,7 +5,7 @@
 #include "ChickenConfiguration.h"
 
 
-const std::string ConfigPath = "./ChickenCtrl.conf";
+const std::string ConfigPath = "/usr/local/bin/chickApp/ChickenCtrl.conf";
 const std::regex section("\\[(.*?)\\]"); 
 const std::regex value("(\\w+)=([^\\+]+(?!\\+{3}))");     
 

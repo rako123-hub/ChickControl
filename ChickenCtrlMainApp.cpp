@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <iostream> 
+#include <ostream>
 #include <chrono>
 #include <thread>
 
@@ -8,40 +9,81 @@
 #include "FlapCtrl.h"
 #include "MCP23017.h"
 #include "LightCtrl.h"
-#include "Serial_USB_I2C_Interface.h"
-#include "I2C_Utils.h"
-
 #include "ChickenConfiguration.h"
+#include "SummerTime.h"
+#include "DS3231.h"
 
-std::string version("0.0.1");
+std::string version("2.0.0");
+
+MCP23017   *mcp    = nullptr;
+LightCtrl  *light  = nullptr;
+SummerTime *summer = nullptr;
+DS3231     *rtc    = nullptr;
+
+void deleteControlObjects()
+{
+  
+   if(light != nullptr)
+   {
+      delete light;
+      light = nullptr;
+   }
+
+   if(mcp != nullptr)
+   {
+      delete mcp;
+      mcp = nullptr;
+   }
+}
+
+void restartControlObjects()
+{
+   mcp = new MCP23017();
+   light = new LightCtrl(mcp);
+}
 
 int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
-   
-   Serial_I2C_Interface *interface = new Serial_I2C_Interface();
-   if(interface->getInitOK())
+
+   rtc    = new DS3231();
+   rtc->getDS3231_setLocalTime();
+   if(rtc != nullptr)
    {
-//      I2CUtils utils(interface);
-       MCP23017 *mcp = new MCP23017(interface);
-       LightCtrl light(mcp);
- //      Nestauto nest;
- //     FlapCtrl flap;
- //      
-
-      while(true)
-      {
-         printf("main:: while loop\n");
-         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-  //       nest.doWork();
-   //      flap.doWork();
-         light.doWork();
-         break;
-      }
-
+      delete rtc;
+      rtc = nullptr;
    }
-   std::cout << "Exit Chicken App";
-   std::cout << "\n \n";
+
+   mcp    = new MCP23017();
+   light  = new LightCtrl(mcp);
+   summer = new SummerTime();
+  
+   while(true)
+   {
+      printf("main:: while loop\n");
+      std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+  //      nest.doWork();
+   //     flap.doWork();
+      if (light != nullptr) light->doWork();
+      if(summer->getSummerTimeChange())
+      {
+         printf("SummerTime change detect!\n");
+         deleteControlObjects();
+         summer->storeNewRTCTime();
+         std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+         restartControlObjects();
+      }
+//   break; 
+   }
+
+   deleteControlObjects();
+   if(summer != nullptr)
+   {
+      delete summer;
+      summer = nullptr;
+   }
+  
+   printf("Exit Chicken App\n");
    
    return EXIT_SUCCESS; // return value
 }
