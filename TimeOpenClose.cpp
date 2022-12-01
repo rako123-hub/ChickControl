@@ -11,6 +11,10 @@ TimeOpenClose::TimeOpenClose(std::string open, std::string close)
 :_open(open), _close(close)
 {}
 
+TimeOpenClose::TimeOpenClose(std::string open, std::string close, std::string dimmOn, std::string dimmOff)
+:_open(open), _close(close), _dimm_on(dimmOn), _dimm_off(dimmOff)
+{}
+
 bool TimeOpenClose::detectOpenCloseTime()
 {
     bool open = false;

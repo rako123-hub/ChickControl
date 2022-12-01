@@ -76,14 +76,17 @@ void LightCtrl::initTime()
 
 void LightCtrl::doWork()
 {
-    _state = LightState::OFF;
     for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
     {
         bool lighton = timeOpenClose->detectOpenCloseTime();
         if (lighton)          // if light is on at the first intervall break and swtch on the light otherwise switch on the light at second intervall
         {
-            _state = LightState::ON;
+            _state = LightState::DIMM_ON;
             break;
+        }
+        else
+        {
+            _state = LightState::DIMM_OFF;
         }
     }
     if(_oldState != _state)
