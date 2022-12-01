@@ -44,11 +44,19 @@ void LightCtrl::readLightConfiguration()
         if(chickConfig.getValue(key, strValue)) _lightData.time_on = strValue;
         key = "light_off_" + std::to_string(i);
         if(chickConfig.getValue(key, strValue)) _lightData.time_off = strValue;
+        key = "light_dimm_on_" + std::to_string(i);
+        if(chickConfig.getValue(key, strValue)) _lightData.time_dimm_on = strValue;
+        key = "light_dimm_off_" + std::to_string(i);
+        if(chickConfig.getValue(key, strValue)) _lightData.time_dimm_off = strValue;
+
         _lightDataVec.emplace_back(_lightData);      
     }
-    key = "light_IO";
+    key = "light_Clear_FF";
     strValue.empty();
-    if(chickConfig.getValue(key, strValue)) _light_IO = strValue;
+    if(chickConfig.getValue(key, strValue)) _light_Clear_FF = strValue;
+    strValue.empty();
+    key = "light_Clock_FF";
+    if(chickConfig.getValue(key, strValue)) _light_Clock_FF = strValue;
 }  
 
 void LightCtrl::initTime()
@@ -83,10 +91,36 @@ void LightCtrl::doWork()
         _oldState = _state; 
         if(mcp23017 != nullptr)
         {
+            if (_state == LightState::OFF)
+            {
+                mcp23017->setOutputPin(_light_Clear_FF, LOW);
+            }
+            else if (_state == LightState::ON)
+            {
+                mcp23017->setOutputPin(_light_Clear_FF, HIGH);
+                doClockFF(_light_Clock_FF);
+            }
             //mcp23017->setOutputPin(_light_IO, _state);
 
             /* implemeted for quick release*/
-            mcp23017->setOutputPin(_state); // this is the setoutputpin fpr all pins -->0xff
+           // mcp23017->setOutputPin(_state); // this is the setoutputpin fpr all pins -->0xff
+
         }
     }
+
+    while(true)
+    {
+        mcp23017->setOutputPin(_light_Clock_FF, LightState::OFF);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        mcp23017->setOutputPin(_light_Clock_FF, LightState::ON);
+        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+
+    }
+}
+
+void LightCtrl::doClockFF(std::string strClk)
+{
+        mcp23017->setOutputPin(strClk, LOW);
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        mcp23017->setOutputPin(strClk, HIGH);
 }

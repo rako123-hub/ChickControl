@@ -13,7 +13,7 @@
 #include "SummerTime.h"
 #include "DS3231.h"
 
-std::string version("2.0.0");
+std::string version("2.0.2");
 
 MCP23017   *mcp    = nullptr;
 LightCtrl  *light  = nullptr;
@@ -45,7 +45,7 @@ void restartControlObjects()
 int main(int argc, char *argv[])
 {
    printf("ChickenControl %s is starting \n" ,version.c_str());
-
+/*
    rtc    = new DS3231();
    rtc->getDS3231_setLocalTime();
    if(rtc != nullptr)
@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
       delete rtc;
       rtc = nullptr;
    }
-
+*/
    mcp    = new MCP23017();
    light  = new LightCtrl(mcp);
    summer = new SummerTime();

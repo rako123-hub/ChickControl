@@ -9,18 +9,20 @@ const std::string strdevice                = "/dev/i2c-2";
 MCP23017::MCP23017()
 {
     std::printf("+++ MCP23017 Ctor\n");
-    /*
+
     readMCP23017_Configuration();
     if(openMCP23017Device())
     {
        init_MCP23017_Devices();
     }
-    */
+
+    /*
     if(openMCP23017Device())
     {
        setDevAdr(0x20);
        setDirOutPut();
     }
+    */
 }
 
 MCP23017::~MCP23017()
