@@ -26,19 +26,25 @@ class LightCtrl
 
     private:
     byte _intervall_count;
-    byte _state    = LightState::UNDEF;
-    byte _oldState = LightState::UNDEF;
+    byte _lightState    = LightState::OFF;
+    byte _oldLightState = LightState::UNDEF;
 
     void readLightConfiguration();
+    void getLightState();
+    bool getTimeOpenInterval();
 
-    std::vector<LightData> _lightDataVec;
     std::string _light_Clock_FF;
     std::string _light_Clear_FF;
-    LightData _lightData;
-    std::vector<TimeOpenClose*> _ptrTimeOpenCloseVec;
-    void initTime();
-    MCP23017 *mcp23017 = nullptr;
+    int _maxDimmSteps;
+    int _actDimmStep = 0;
+    std::vector<LightData> _lightDataVec;  
     void doClockFF(std::string strPin);
+    void lightOff();
+    void lightOn();
+    void dimmOff();
+    void dimmOn();
+    TimeOpenClose *timeOpenClose = nullptr;
+    MCP23017      *mcp23017      = nullptr;
 
     public:
     void doWork();

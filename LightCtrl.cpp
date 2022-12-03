@@ -9,23 +9,21 @@ const short       default_LightIntervall   = 1;
 LightCtrl::LightCtrl()
 {
     readLightConfiguration();
+    timeOpenClose = new TimeOpenClose();
 }
 
 LightCtrl::LightCtrl(MCP23017 *mcp23017Device)
 :mcp23017(mcp23017Device)
 {
     readLightConfiguration();
-    initTime();
+    timeOpenClose = new TimeOpenClose();
 }
 
 LightCtrl::~LightCtrl()
 {
-    for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
+    if(timeOpenClose != nullptr)
     {
-        if(timeOpenClose != nullptr)
-        {
-            delete timeOpenClose;
-        }
+        delete timeOpenClose;
     }
 }
 
@@ -39,17 +37,17 @@ void LightCtrl::readLightConfiguration()
 
     for(int i = 1; i <= _intervall_count; i++)
     {
+        LightData lightData;
         strValue.empty();
         key = "light_on_" + std::to_string(i);
-        if(chickConfig.getValue(key, strValue)) _lightData.time_on = strValue;
+        if(chickConfig.getValue(key, strValue)) lightData.time_on = strValue;
         key = "light_off_" + std::to_string(i);
-        if(chickConfig.getValue(key, strValue)) _lightData.time_off = strValue;
+        if(chickConfig.getValue(key, strValue)) lightData.time_off = strValue;
         key = "light_dimm_on_" + std::to_string(i);
-        if(chickConfig.getValue(key, strValue)) _lightData.time_dimm_on = strValue;
+        if(chickConfig.getValue(key, strValue)) lightData.time_dimm_on = strValue;
         key = "light_dimm_off_" + std::to_string(i);
-        if(chickConfig.getValue(key, strValue)) _lightData.time_dimm_off = strValue;
-
-        _lightDataVec.emplace_back(_lightData);      
+        if(chickConfig.getValue(key, strValue)) lightData.time_dimm_off = strValue;
+        _lightDataVec.emplace_back(lightData);      
     }
     key = "light_Clear_FF";
     strValue.empty();
@@ -57,68 +55,79 @@ void LightCtrl::readLightConfiguration()
     strValue.empty();
     key = "light_Clock_FF";
     if(chickConfig.getValue(key, strValue)) _light_Clock_FF = strValue;
+    key = "dimm_steps";
+    iValue = 0;
+    if(chickConfig.getValue(key, iValue)) _maxDimmSteps = iValue;
 }  
-
-void LightCtrl::initTime()
-{
-   
-   TimeOpenClose *timeOpenClose = nullptr;
-   
-   for(LightData data : _lightDataVec)
-   {
-       timeOpenClose = new TimeOpenClose(data.time_on, data.time_off);
-       if(timeOpenClose != nullptr)
-       {
-           _ptrTimeOpenCloseVec.emplace_back(timeOpenClose);
-       }
-   }
-}
 
 void LightCtrl::doWork()
 {
-    for(TimeOpenClose *timeOpenClose : _ptrTimeOpenCloseVec)
+    //set lightState ON, OFF, DIMM_ON, DIMM_OFF
+    _lightState = LightState::OFF;
+    if (getTimeOpenInterval())
     {
-        bool lighton = timeOpenClose->detectOpenCloseTime();
-        if (lighton)          // if light is on at the first intervall break and swtch on the light otherwise switch on the light at second intervall
-        {
-            _state = LightState::DIMM_ON;
-            break;
-        }
-        else
-        {
-            _state = LightState::DIMM_OFF;
-        }
+       getLightState();
     }
-    if(_oldState != _state)
+    if(_oldLightState != _lightState)
     {
-        _oldState = _state; 
-        if(mcp23017 != nullptr)
-        {
-            if (_state == LightState::OFF)
-            {
-                mcp23017->setOutputPin(_light_Clear_FF, LOW);
-            }
-            else if (_state == LightState::ON)
-            {
-                mcp23017->setOutputPin(_light_Clear_FF, HIGH);
-                doClockFF(_light_Clock_FF);
-            }
-            //mcp23017->setOutputPin(_light_IO, _state);
+       _oldLightState = _lightState;
+       switch(_lightState)
+       {
+           case LightState::ON:
+             lightOn();
+             break;
 
-            /* implemeted for quick release*/
-           // mcp23017->setOutputPin(_state); // this is the setoutputpin fpr all pins -->0xff
+           case LightState::OFF:
+             lightOff();
+             break;
+        
+           case LightState::DIMM_ON:
+              dimmOn();
+              break;  
 
-        }
+           case LightState::DIMM_OFF:
+              dimmOff();
+              break;
+
+           default:
+              break;
+       }
     }
+}
 
-    while(true)
+bool LightCtrl::getTimeOpenInterval()
+{
+    bool interval = false;
+    for( LightData data : _lightDataVec)
     {
-        mcp23017->setOutputPin(_light_Clock_FF, LightState::OFF);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-        mcp23017->setOutputPin(_light_Clock_FF, LightState::ON);
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
-
+        timeOpenClose->setOpen(data.time_on);
+        timeOpenClose->setClose(data.time_off);
+        timeOpenClose->setDimmOn(data.time_dimm_on);
+        timeOpenClose->setDimmOff(data.time_dimm_off);   
+        if (timeOpenClose->detectOpenCloseTime())
+        {
+           interval = true;
+           timeOpenClose->setMaxDimmSteps(_maxDimmSteps);
+           break; 
+        }  
     }
+    return interval;
+}
+
+void LightCtrl::getLightState()
+{
+    if (timeOpenClose->detectDimmTimeON())
+    {
+        _lightState = LightState::DIMM_ON;
+    } 
+    else if(timeOpenClose->detectDimmTimeOFF())
+    {
+       _lightState = LightState::DIMM_OFF; 
+    }   
+    else
+    {
+       _lightState = LightState::ON;
+    }  
 }
 
 void LightCtrl::doClockFF(std::string strClk)
@@ -126,4 +135,34 @@ void LightCtrl::doClockFF(std::string strClk)
         mcp23017->setOutputPin(strClk, LOW);
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
         mcp23017->setOutputPin(strClk, HIGH);
+}
+
+void LightCtrl::lightOn()
+{
+    mcp23017->setOutputPin(_light_Clear_FF, HIGH);
+    doClockFF(_light_Clock_FF);
+    timeOpenClose->resetDimmSteps();
+
+}
+
+void LightCtrl::lightOff()
+{
+    mcp23017->setOutputPin(_light_Clear_FF, LOW);
+    timeOpenClose->resetDimmSteps();
+}
+
+void LightCtrl::dimmOff()
+{
+    int dimmStep = timeOpenClose->getDimmOFFStep();
+ 
+    if(dimmStep != _actDimmStep)
+    {
+        _actDimmStep = dimmStep;
+        doClockFF(_light_Clock_FF);
+    }
+}
+
+void LightCtrl::dimmOn()
+{
+    
 }

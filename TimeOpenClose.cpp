@@ -11,31 +11,33 @@ TimeOpenClose::TimeOpenClose(std::string open, std::string close)
 :_open(open), _close(close)
 {}
 
-TimeOpenClose::TimeOpenClose(std::string open, std::string close, std::string dimmOn, std::string dimmOff)
-:_open(open), _close(close), _dimm_on(dimmOn), _dimm_off(dimmOff)
+TimeOpenClose::TimeOpenClose(std::string open, std::string close, std::string dimm_on, std::string _dimm_off, int maxDimmSteps)
+:_open(open), _close(close), _dimm_on(dimm_on), _dimm_off(_dimm_off), _maxDimmSteps(maxDimmSteps)
 {}
+
+//time per day
+//                 1. Intervall                                        2. Intervall
+//   CLOSE           O P E N                        CLOSE               O P E N                    CLOSE
+//   CLOSE ( _open _dimm_on    _close _dimm_off )   CLOSE   (_open  _dimm_on    _close _dimm_off)  CLOSE
 
 bool TimeOpenClose::detectOpenCloseTime()
 {
     bool open = false;
-    int seconds_now, seconds_open, seconds_close = 0;
+    int seconds_now, seconds_open, seconds_close, seconds_dimmoff = 0;
     
-    seconds_now   = getSeconds();
-    seconds_open  = getSeconds(_open);
-    seconds_close = getSeconds(_close);
+    seconds_now     = getSeconds();
+    seconds_open    = getSeconds(_open);
+    seconds_close   = getSeconds(_close);
+    seconds_dimmoff = getSeconds(_dimm_off);
 
     printf("SecondsNow              seconds: %d\n", seconds_now);
     printf("Openstring:  %s , seconds: %d\n", _open.c_str(), seconds_open);
     printf("Closestring: %s , seconds: %d\n", _close.c_str(), seconds_close);
 
-    if ((seconds_now - seconds_open) > 0) open = true;
-    if ((seconds_now - seconds_close) > 0) open = false;
-     
-    printf("\n");
-    if (open) printf("*****OPEN*****\n");       
-    else      printf("*****CLOSE****\n");
-    printf("\n");
-    
+    if((seconds_now > seconds_open) && (seconds_now < (seconds_close + seconds_dimmoff)))
+    {
+        open = true;
+    }
     return open;
 }
 
@@ -64,6 +66,66 @@ int TimeOpenClose::getSeconds()
     printf ( "Current date and time are: %s \n", asctime (tm_now) );
 
     return seconds_now;
+}
+
+bool TimeOpenClose::detectDimmTimeOFF()
+{
+    bool detectDimmOFF = false;
+    int seconds_now, seconds_close, seconds_dimmOFF = 0;
+
+    seconds_close   = getSeconds(_close);
+    seconds_dimmOFF = getSeconds(_dimm_off);
+    seconds_now     = getSeconds();
+
+    if((seconds_now > seconds_close) && (seconds_now < (seconds_close + seconds_dimmOFF)))
+    {
+        detectDimmOFF = true;
+    }
+    return detectDimmOFF;    
+}
+
+bool TimeOpenClose::detectDimmTimeON()
+{
+    bool detectDimmON = false;
+    int seconds_now, seconds_open, seconds_dimmON = 0;
+
+    seconds_open   = getSeconds(_open);
+    seconds_dimmON = getSeconds(_dimm_on);
+    seconds_now    = getSeconds();
+
+    if((seconds_now > seconds_open) && (seconds_now < (seconds_open + seconds_dimmON)))
+    {
+        detectDimmON = true;
+    }
+    return detectDimmON;
+}
+
+int TimeOpenClose::getDimmOFFStep()
+{
+    int seconds_now, seconds_close, seconds_dimmOFF, seconds_step_interval = 0;
+    if(_maxDimmSteps > 0)
+    {
+       seconds_close = getSeconds(_close);
+       seconds_dimmOFF = getSeconds(_dimm_off);
+       seconds_step_interval = seconds_dimmOFF / _maxDimmSteps;
+       seconds_now = getSeconds();
+
+       if(seconds_now > (seconds_close + seconds_dimmOFF))
+       {
+           _actDimmStep = -1;
+       }
+       else if( seconds_now > (seconds_close + seconds_step_interval * _actDimmStep))
+       {
+            _actDimmStep++;
+            if(_actDimmStep > _maxDimmSteps) _actDimmStep = -1;
+       }
+    }
+    return _actDimmStep;
+}
+
+void TimeOpenClose::resetDimmSteps()
+{
+    _actDimmStep = 0;
 }
 
     
