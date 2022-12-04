@@ -43,6 +43,7 @@ class LightCtrl
     void lightOn();
     void dimmOff();
     void dimmOn();
+    void printLightState();
     TimeOpenClose *timeOpenClose = nullptr;
     MCP23017      *mcp23017      = nullptr;
 

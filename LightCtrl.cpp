@@ -93,6 +93,7 @@ void LightCtrl::doWork()
               break;
        }
     }
+    printLightState();
 }
 
 bool LightCtrl::getTimeOpenInterval()
@@ -165,4 +166,30 @@ void LightCtrl::dimmOff()
 void LightCtrl::dimmOn()
 {
     
+}
+
+void LightCtrl::printLightState()
+{
+    switch(_lightState)
+    {
+        case LightState::ON:
+            printf("*******LIGHT ON\n");
+            break;
+
+        case LightState::OFF:
+            printf("*******LIGHT OFF\n");
+            break;
+        
+        case LightState::DIMM_ON:
+            printf("*******LIGHT DIMMON DimmStep:%d\n", _actDimmStep);
+            break;  
+
+        case LightState::DIMM_OFF:
+            printf("*******LIGHT DIMMOFF DimmStep:%d\n", _actDimmStep);
+            break;
+
+        default:
+            printf("*******LIGHT default\n");
+            break;
+    }
 }

@@ -110,6 +110,9 @@ int TimeOpenClose::getDimmOFFStep()
        seconds_step_interval = seconds_dimmOFF / _maxDimmSteps;
        seconds_now = getSeconds();
 
+       printf("secondsDIMMOFF %d\n", seconds_dimmOFF);
+       printf("seconds_step_interval %d\n", seconds_step_interval);
+
        if(seconds_now > (seconds_close + seconds_dimmOFF))
        {
            _actDimmStep = -1;
