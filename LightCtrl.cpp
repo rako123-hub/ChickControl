@@ -68,31 +68,36 @@ void LightCtrl::doWork()
     {
        getLightState();
     }
-    if(_oldLightState != _lightState)
+   
+    switch(_lightState)
     {
-       _oldLightState = _lightState;
-       switch(_lightState)
-       {
-           case LightState::ON:
-             lightOn();
-             break;
+        case LightState::ON:
+            if(_oldLightState != _lightState)
+            {
+                lightOn();
+            }
+            break;
 
-           case LightState::OFF:
-             lightOff();
+       case LightState::OFF:
+             if(_oldLightState != _lightState)
+             {
+                lightOff();
+             }
              break;
         
-           case LightState::DIMM_ON:
-              dimmOn();
-              break;  
+        case LightState::DIMM_ON:
+            dimmOn();
+            break;  
 
-           case LightState::DIMM_OFF:
-              dimmOff();
-              break;
+        case LightState::DIMM_OFF:
+            dimmOff();
+            break;
 
-           default:
-              break;
-       }
+        default:
+            break;
     }
+    _oldLightState = _lightState;
+    
     printLightState();
 }
 
