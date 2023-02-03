@@ -35,10 +35,11 @@ class LightCtrl
 
     std::string _light_Clock_FF;
     std::string _light_Clear_FF;
+    std::string _light_Data_FF;
     int _maxDimmSteps;
     int _actDimmStep = 0;
     std::vector<LightData> _lightDataVec;  
-    void doClockFF(std::string strPin);
+    void doClock(std::string strPin);
     void lightOff();
     void lightOn();
     void dimmOff();

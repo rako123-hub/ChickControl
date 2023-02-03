@@ -13,7 +13,7 @@
 #include "SummerTime.h"
 #include "DS3231.h"
 
-std::string version("2.0.2");
+std::string version("2.0.3");
 
 MCP23017   *mcp    = nullptr;
 LightCtrl  *light  = nullptr;

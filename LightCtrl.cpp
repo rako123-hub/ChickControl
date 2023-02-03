@@ -55,6 +55,9 @@ void LightCtrl::readLightConfiguration()
     strValue.empty();
     key = "light_Clock_FF";
     if(chickConfig.getValue(key, strValue)) _light_Clock_FF = strValue;
+    strValue.empty();
+    key = "light_Data_FF";
+     if(chickConfig.getValue(key, strValue)) _light_Data_FF = strValue;
     key = "dimm_steps";
     iValue = 0;
     if(chickConfig.getValue(key, iValue)) _maxDimmSteps = iValue;
@@ -62,6 +65,49 @@ void LightCtrl::readLightConfiguration()
 
 void LightCtrl::doWork()
 {
+    while(true)
+    {
+     
+         mcp23017->setOutputPin(_light_Data_FF, HIGH);
+         mcp23017->setOutputPin(_light_Clear_FF, HIGH);
+         doClock(_light_Clock_FF);
+         /*
+         mcp23017->setOutputPin(_light_Clock_FF, LOW);
+         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+         mcp23017->setOutputPin(_light_Clock_FF, HIGH);
+         */
+         mcp23017->setOutputPin(_light_Data_FF, LOW);
+
+         std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+         doClock(_light_Clock_FF);
+         /*
+          mcp23017->setOutputPin(_light_Clock_FF, LOW);
+         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+         mcp23017->setOutputPin(_light_Clock_FF, HIGH);
+         */
+         
+
+          std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+          doClock(_light_Clock_FF);
+          /*
+          mcp23017->setOutputPin(_light_Clock_FF, LOW);
+         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+         mcp23017->setOutputPin(_light_Clock_FF, HIGH);
+         */
+
+          std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+          doClock(_light_Clock_FF);
+          /*
+          mcp23017->setOutputPin(_light_Clock_FF, LOW);
+         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+         mcp23017->setOutputPin(_light_Clock_FF, HIGH);
+*/
+          std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+          mcp23017->setOutputPin(_light_Clear_FF, LOW);
+          std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+          
+    }
+
     //set lightState ON, OFF, DIMM_ON, DIMM_OFF
     _lightState = LightState::OFF;
     if (getTimeOpenInterval())
@@ -136,17 +182,17 @@ void LightCtrl::getLightState()
     }  
 }
 
-void LightCtrl::doClockFF(std::string strClk)
+void LightCtrl::doClock(std::string strClk)
 {
         mcp23017->setOutputPin(strClk, LOW);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+ //       std::this_thread::sleep_for(std::chrono::milliseconds(1));
         mcp23017->setOutputPin(strClk, HIGH);
 }
 
 void LightCtrl::lightOn()
 {
     mcp23017->setOutputPin(_light_Clear_FF, HIGH);
-    doClockFF(_light_Clock_FF);
+    doClock(_light_Clock_FF);
     timeOpenClose->resetDimmSteps();
 
 }
@@ -164,7 +210,7 @@ void LightCtrl::dimmOff()
     if(dimmStep != _actDimmStep)
     {
         _actDimmStep = dimmStep;
-        doClockFF(_light_Clock_FF);
+        doClock(_light_Clock_FF);
     }
 }
 

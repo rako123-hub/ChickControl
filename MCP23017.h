@@ -99,7 +99,7 @@ class MCP23017
     void readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::string strVal, int devNum);
     void init_MCP23017_Devices();
     void set_MCP230127_Dir_and_PullUp_Pins();    
-    void checkConnectedDevices();  
+    bool checkConnectedDevices();  
     void deleteNotConnectedDevices(std::vector<std::string>);           
     void get_Adr_byteVal_Port(std::string strGpioDev, std::string &strAddr, byte &byteVal, bool &port);   
     bool setDevAdr(byte addr);                        

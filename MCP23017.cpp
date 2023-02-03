@@ -121,13 +121,20 @@ void MCP23017::readMCP23017_Dir_Config(ChickenConfiguration *chickConfig, std::s
 
 void MCP23017::init_MCP23017_Devices()
 {
-    checkConnectedDevices();
-    set_MCP230127_Dir_and_PullUp_Pins();
+    if(checkConnectedDevices())
+    {
+       set_MCP230127_Dir_and_PullUp_Pins();
+       //setDirOutPut(); //set all pin to output only for testing
+    }
+    else
+    {
+        printf("No MCP27016 Device connected to I2C Bus\n");
+    }
 }
 
 /* try to connect the configured devices and store them into vector after this delte the key of not connected devs*/
-void MCP23017::checkConnectedDevices() 
-{
+bool MCP23017::checkConnectedDevices() 
+{   bool connected = false;
     for (const auto& elements : _gpio_Adr_Dir_Map)  //key --> elements.first, value --> elements.second
     {
         std::string devAdr = elements.first;
@@ -144,9 +151,11 @@ void MCP23017::checkConnectedDevices()
             {
                 printf("Device %0x connected to I2C Bus\n", addr);
                _connectedDevsVec.emplace_back(devAdr);
+               connected = true;
             }
         }
     }
+    return connected;
 }
 
 bool MCP23017::setDevAdr(byte addr)
